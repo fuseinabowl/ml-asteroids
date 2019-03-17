@@ -2,22 +2,30 @@ import pyglet
 
 from objects import player, world
 
-window = pyglet.window.Window()
-image = pyglet.resource.image('a-pecks-thin.png')
+def main():
+    game_window = pyglet.window.Window(800, 600)
 
-instance_world = world.World()
-players = [player.Player()]
+    background_batch = pyglet.graphics.Batch()
+    main_batch = pyglet.graphics.Batch()
 
-@window.event
-def on_update():
-    for player in players:
-        player_perceived_world_state = player.gather_player_perceived_world_state(instance_world)
-        player.calculate_actions(player_perceived_world_state)
-    instance_world.update()
+    instance_world = world.World()
+    players = [player.Player()]
 
-@window.event
-def on_draw():
-    window.clear()
-    image.blit(0,0)
+    @window.event
+    def on_update():
+        for player in players:
+            player_perceived_world_state = player.gather_player_perceived_world_state(instance_world)
+            player.calculate_and_store_actions(player_perceived_world_state)
+        instance_world.update()
 
-pyglet.app.run()
+    @window.event
+    def on_draw():
+        game_window.clear()
+        background_batch.draw()
+        main_batch.draw()
+
+    pyglet.app.run()
+
+if __name__ == '__main__':
+    main()
+    
