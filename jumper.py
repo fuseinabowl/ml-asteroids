@@ -17,7 +17,6 @@ def main():
     instance_world = world.World()
     players = [player.Player()]
 
-    @game_window.event
     def update(dt):
         for player in players:
             player_perceived_world_state = player.gather_player_perceived_world_state(instance_world)
