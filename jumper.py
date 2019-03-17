@@ -11,14 +11,14 @@ def main():
     instance_world = world.World()
     players = [player.Player()]
 
-    @window.event
+    @game_window.event
     def on_update():
         for player in players:
             player_perceived_world_state = player.gather_player_perceived_world_state(instance_world)
             player.calculate_and_store_actions(player_perceived_world_state)
         instance_world.update()
 
-    @window.event
+    @game_window.event
     def on_draw():
         game_window.clear()
         background_batch.draw()
@@ -28,4 +28,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
