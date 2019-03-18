@@ -1,0 +1,16 @@
+* Add playable backend for debugging
+  * Make some game
+    * google chrome dinosaur jump?
+    * super meat bot again?
+    * mini-spelunky?
+    * asteroids! << think this is best, simplest game but starts me working with keras earliest
+    * bowmaster?
+    * gunmaster? super crate box (single weapon)?
+    * hammerwatch survival?
+    * steambirds survival?
+    * some sort of 3D platformer? Prince of persia? Titanfall movement only?
+    * car driver?
+* Add keras backend for training
+* Add standalone trainer for training
+* Add program to fork off a trainer and periodically show the latest training result, like my super meat bot implementation
+  * Add training performance graph (training data and test)
