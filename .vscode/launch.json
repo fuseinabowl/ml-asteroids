@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Jumper",
+            "name": "Python: Asteroids",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/jumper.py",
+            "program": "${workspaceFolder}/asteroids.py",
             "console": "integratedTerminal"
         },
         {
