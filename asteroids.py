@@ -3,16 +3,18 @@ import pyglet
 from objects import player, world
 from game import background, resources
 
-def load_background(background_batch):
-    return background.load_background(background_batch, resources.background)
+window_dimensions = {'x':800, 'y':600}
+
+def load_background(background_batch, window_dimensions):
+    return background.load_background(background_batch, resources.background, window_dimensions)
 
 def main():
-    game_window = pyglet.window.Window(800, 600)
+    game_window = pyglet.window.Window(window_dimensions['x'], window_dimensions['y'])
 
     background_batch = pyglet.graphics.Batch()
     main_batch = pyglet.graphics.Batch()
 
-    background_sprite = load_background(background_batch)
+    background_sprite = load_background(background_batch, window_dimensions)
 
     instance_world = world.World()
     players = [player.Player()]
