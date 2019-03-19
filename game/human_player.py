@@ -5,9 +5,9 @@ from . import player, single_frame_actions
 
 player_input_keys = {
     'fire' : key.SPACE,
-    'turn left' : key.LEFT,
-    'turn right' : key.RIGHT,
-    'thrust' : key.UP
+    'turn left' : key.A,
+    'turn right' : key.D,
+    'thrust' : key.W
 }
 
 class HumanPlayer(player.Player):
