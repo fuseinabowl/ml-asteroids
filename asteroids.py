@@ -1,12 +1,12 @@
 import pyglet
 
-from objects import player, world
-from game import background, resources
+from game import player, world
+from renderer import background
 
 window_dimensions = {'x':800, 'y':600}
 
 def load_background(background_batch, window_dimensions):
-    return background.load_background(background_batch, resources.background, window_dimensions)
+    return background.load_background(background_batch, window_dimensions)
 
 def main():
     game_window = pyglet.window.Window(window_dimensions['x'], window_dimensions['y'])

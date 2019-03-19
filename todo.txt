@@ -1,16 +1,47 @@
 * Add playable backend for debugging
   * Make some game
-    * google chrome dinosaur jump?
-    * super meat bot again?
-    * mini-spelunky?
+    * google chrome dinosaur jump? << boring
+    * super meat bot again? << nah
+    * mini-spelunky? << discrete inputs, but requires a lot of content (and probably a lot of training too)
     * asteroids! << think this is best, simplest game but starts me working with keras earliest
+      * can be extended with buddies, ATC and communication (possibly enemies too?)
     * bowmaster?
-    * gunmaster? super crate box (single weapon)?
+    * gunmaster? super crate box (single weapon)? << super crate box would be cool, discrete input, high skill ceiling (just shove more dudes in there)
     * hammerwatch survival?
-    * steambirds survival?
-    * some sort of 3D platformer? Prince of persia? Titanfall movement only?
-    * car driver?
+    * steambirds survival? continuous action space, not great for first attempt
+    * some sort of 3D platformer? Prince of persia? Titanfall movement only? very complex, continuous
+    * car driver? kinda nice
 * Add keras backend for training
-* Add standalone trainer for training
+* Add standalone trainer for training, emitting checkpoints/models
 * Add program to fork off a trainer and periodically show the latest training result, like my super meat bot implementation
   * Add training performance graph (training data and test)
+
+asteroids implementation
++ background
+- game model/game representation split design
+  * do all the gameplay and rendering together, but make sure they're separable
+- player input abstraction (keyboard vs ML input)
+- player movement
+- player shooting
+- asteroid movement
+- asteroid player collision
+- asteroid bullet collision
+- end of level asteroid respawn
+- add scoring
+
+ML implementation
+- abstract asteroids as a gym
+- implement observation space
+- implement a 2 layer NN agent and begin online training
+- save models from the online training
+- implement online model loading and run the trained models in evaluation mode
+- implement offline training and save models
+- implement trainer fork and multiprocess communication to receive a model from the training process, show in real time
+- add training stats communication from the training process, show in graph form next to the gameplay
+
+Further work
+- iterate on agent architecture (4 layer NN? Wide NN?)
+- Add second player (allow online play with a human player and an ML NPC)
+- Deploy probes to get more inputs to the ML agent?
+- Add ML agent who can see the whole of the map and one that cannot, see how they work together?
+  - air traffic control style agent who communicates with the fighter?

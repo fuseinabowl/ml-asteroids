@@ -1,1 +1,1 @@
-from . import background, resources
+from . import world, player
