@@ -24,11 +24,11 @@ class Renderer():
 
         self._get_world_callback = get_world_callback
 
-        @self._game_window.event
         def on_draw():
             self._game_window.clear()
             self._background_batch.draw()
             self._main_batch.draw()
+        self._game_window.event(on_draw)
 
     @property
     def game_window(self):
