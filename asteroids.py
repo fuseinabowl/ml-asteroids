@@ -1,38 +1,24 @@
 import pyglet
 
 from game import player, world
-from renderer import background
-
-window_dimensions = {'x':800, 'y':600}
-
-def load_background(background_batch, window_dimensions):
-    return background.load_background(background_batch, window_dimensions)
+from renderer import renderer
 
 def main():
-    game_window = pyglet.window.Window(window_dimensions['x'], window_dimensions['y'])
-
-    background_batch = pyglet.graphics.Batch()
-    main_batch = pyglet.graphics.Batch()
-
-    background_sprites = load_background(background_batch, window_dimensions)
-
     instance_world = world.World()
     players = [player.Player()]
 
-    def update(dt):
+    def update_game():
         for player in players:
             player_perceived_world_state = player.gather_player_perceived_world_state(instance_world)
             player.calculate_and_store_actions(player_perceived_world_state)
         instance_world.update()
 
-    @game_window.event
-    def on_draw():
-        game_window.clear()
-        background_batch.draw()
-        main_batch.draw()
+    def get_world():
+        return instance_world
 
-    pyglet.clock.schedule_interval(update, 1 / 120.0)
-    pyglet.app.run()
+    renderer_instance = renderer.Renderer(update_game, get_world)
+
+    renderer_instance.run()
 
 if __name__ == '__main__':
     main()
