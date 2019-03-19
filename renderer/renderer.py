@@ -30,6 +30,9 @@ class Renderer():
 
         def on_draw():
             self._game_window.clear()
+
+            self._apply_world_to_render_state(self._get_world())
+
             self._background_batch.draw()
             self._player_batch.draw()
         self._game_window.event(on_draw)
@@ -40,3 +43,7 @@ class Renderer():
 
     def run(self):
         pyglet.app.run()
+
+    def _apply_world_to_render_state(self, world):
+        self._player_sprite.x = world.player[0]
+        self._player_sprite.y = world.player[1]
