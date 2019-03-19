@@ -14,7 +14,7 @@ def main():
     background_batch = pyglet.graphics.Batch()
     main_batch = pyglet.graphics.Batch()
 
-    background_sprite = load_background(background_batch, window_dimensions)
+    background_sprites = load_background(background_batch, window_dimensions)
 
     instance_world = world.World()
     players = [player.Player()]
@@ -29,7 +29,7 @@ def main():
     def on_draw():
         game_window.clear()
         background_batch.draw()
-        # main_batch.draw()
+        main_batch.draw()
 
     pyglet.clock.schedule_interval(update, 1 / 120.0)
     pyglet.app.run()
