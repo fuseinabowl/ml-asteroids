@@ -1,1 +1,1 @@
-from . import world, player
+from . import world, player, human_player

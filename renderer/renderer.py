@@ -30,5 +30,9 @@ class Renderer():
             self._background_batch.draw()
             self._main_batch.draw()
 
+    @property
+    def game_window(self):
+        return self._game_window
+
     def run(self):
         pyglet.app.run()
