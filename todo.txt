@@ -20,8 +20,8 @@ asteroids implementation
 + background
 + game model/game representation split design
   * do all the gameplay and rendering together, but make sure they're separable
-* player input abstraction (keyboard vs ML input)
-- player movement
++ player input abstraction (keyboard vs ML input)
++ player movement
 - player shooting
 - asteroid movement
 - asteroid player collision
