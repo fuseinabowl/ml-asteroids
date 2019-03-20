@@ -22,11 +22,9 @@ asteroids implementation
   * do all the gameplay and rendering together, but make sure they're separable
 + player input abstraction (keyboard vs ML input)
 + player movement
-- player shooting
 - asteroid movement
 - asteroid player collision
-- asteroid bullet collision
-- end of level asteroid respawn
+- continuous asteroid respawn
 - add scoring
 
 ML implementation
