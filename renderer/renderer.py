@@ -45,5 +45,5 @@ class Renderer():
         pyglet.app.run()
 
     def _apply_world_to_render_state(self, world):
-        self._player_sprite.x = world.player[0]
-        self._player_sprite.y = world.player[1]
+        self._player_sprite.x = world.player.position[0]
+        self._player_sprite.y = world.player.position[1]
