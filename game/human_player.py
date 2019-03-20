@@ -16,7 +16,8 @@ class HumanPlayer(player.Player):
 
         self._register_for_events(pyglet_window)
 
-        self._turn_speed = 0
+        self._left_pressed = 0
+        self._right_pressed = 0
         self._thrust = 0
         self._reset_event_cache()
 
@@ -29,11 +30,28 @@ class HumanPlayer(player.Player):
     def on_key_press(self, symbol, modifiers):
         if symbol == player_input_keys['fire']:
             self._fire_requests = self._fire_requests + 1
+        elif symbol == player_input_keys['turn left']:
+            self._left_pressed = 1
+        elif symbol == player_input_keys['turn right']:
+            self._right_pressed = 1
+        elif symbol == player_input_keys['thrust']:
+            self._thrust = 1
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == player_input_keys['turn left']:
+            self._left_pressed = 0
+        elif symbol == player_input_keys['turn right']:
+            self._right_pressed = 0
+        elif symbol == player_input_keys['thrust']:
+            self._thrust = 0
+
+    def _calculate_turn_speed(self):
+        return -self._left_pressed + self._right_pressed
 
     def get_this_frame_actions(self, perceived_world_state):
         actions = single_frame_actions.SingleFrameActions(
             bullets_firing = self._fire_requests,
-            turn_speed = self._turn_speed,
+            turn_speed = self._calculate_turn_speed,
             thrust = self._thrust
         )
         self._reset_event_cache()
