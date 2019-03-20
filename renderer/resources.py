@@ -9,5 +9,9 @@ def center_image(image : pyglet.resource.image):
     image.anchor_y = image.height / 2
 
 background = pyglet.resource.image("purple.png")
+
+player_scale = 0.5
 player = pyglet.resource.image("player_ship.png")
+player.height = player.height * player_scale
+player.width = player.width * player_scale
 center_image(player)
