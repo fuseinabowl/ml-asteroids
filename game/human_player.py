@@ -51,7 +51,7 @@ class HumanPlayer(player.Player):
     def get_this_frame_actions(self, perceived_world_state):
         actions = single_frame_actions.SingleFrameActions(
             bullets_firing = self._fire_requests,
-            turn_speed = self._calculate_turn_speed,
+            turn_speed = self._calculate_turn_speed(),
             thrust = self._thrust
         )
         self._reset_event_cache()

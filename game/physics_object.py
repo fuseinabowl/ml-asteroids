@@ -7,7 +7,7 @@ class PhysicsObject():
             rotation:float=0,
             rotational_velocity:float=0,
             friction:float=0.01,
-            rotational_friction:float=0.01
+            rotational_friction:float=0.02
     ):
         self.position = [x,y]
         self.velocity = [x_velocity,y_velocity]
@@ -23,4 +23,4 @@ class PhysicsObject():
         new_rotation = self.rotation + self.rotational_velocity
         self.rotation = new_rotation % (2 * math.pi)
 
-        self.rotational_velocity = self.rotational_velocity * self.rotational_friction
+        self.rotational_velocity = self.rotational_velocity * (1 - self.rotational_friction)
