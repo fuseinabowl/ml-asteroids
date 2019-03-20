@@ -45,3 +45,13 @@ Further work
 - Deploy probes to get more inputs to the ML agent?
 - Add ML agent who can see the whole of the map and one that cannot, see how they work together?
   - air traffic control style agent who communicates with the fighter?
+- Super Crate Box style scoring
+  * asteroids sometimes drop a random weapon, which affects how the game works, but is also how you score points
+    * mining laser - needs to be trained on the same asteroid for some time to shatter it
+    * basic bullets - classic asteroids
+    * mines
+    * torpedoes
+    * phase bolos - fire two projectiles with your first two trigger pulls, then the third trigger pull will cast a destructive beam between them
+  * not sure this is interesting from a NN standpoint, it will be able to train on these probably and it's not super new
+- Adversarial world, spawns asteroids in a way that kills the player the most effectively
+  * will train the bot faster too (probably!)
