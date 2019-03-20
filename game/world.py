@@ -1,3 +1,5 @@
+from math import sin, cos
+
 from . import single_frame_actions, physics_object
 
 class World():
@@ -9,7 +11,8 @@ class World():
 
     def update(self, player_actions : single_frame_actions.SingleFrameActions):
         self._player_ship.rotational_velocity = self._player_ship.rotational_velocity + player_actions.turn_speed * self._player_maximum_turn_thrust
-        self._player_ship.velocity[1] = self._player_ship.velocity[1] + player_actions.thrust * self._player_maximum_thrust
+        player_forward_vector = [sin(self._player_ship.rotation), cos(self._player_ship.rotation)]
+        self._player_ship.velocity = [respective_velocity + player_actions.thrust * self._player_maximum_thrust * respective_player_forward_vector for respective_velocity, respective_player_forward_vector in zip(self._player_ship.velocity, player_forward_vector)]
         self._player_ship.update()
 
     def add_player(self, player_controller):
