@@ -22,7 +22,7 @@ asteroids implementation
   * do all the gameplay and rendering together, but make sure they're separable
 + player input abstraction (keyboard vs ML input)
 + player movement
-- asteroid movement
++ asteroid movement
 - asteroid player collision
 - player edge of screen collision
 - asteroid edge of screen collision
