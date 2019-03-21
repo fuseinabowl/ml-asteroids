@@ -1,7 +1,11 @@
-from math import sin, cos, pi
+from math import sin, cos, tan, pi
 from random import random
+from typing import Tuple
 
 from . import single_frame_actions, physics_object
+
+class Borders:
+    LEFT, TOP, RIGHT, BOTTOM = range(4)
 
 class World():
     def __init__(self):
@@ -38,31 +42,67 @@ class World():
     def _create_starting_asteroids(self):
         return [self._create_single_asteroid() for x in range(5)]
 
-    def _create_single_asteroid(self):
-        direction = random() * 2 * pi
-
-        class Borders:
-            LEFT, TOP, RIGHT, BOTTOM = range(4)
-        border_collided_with = Borders.LEFT
-        collision_point = (0,0)
-        
-        # find border in direction from centre
+    def _find_border_from_center(self, clockwise_angle_from_right : float) -> Tuple[int, Tuple[float, float]]:
         left_border_x = 0
         right_border_x = 800
         bottom_border_y = 0
         top_border_y = 600
 
-        if direction > pi:
-            pass
-        elif direction < pi and direction > 0:
-            pass
-        elif direction is 0:
-            border_collided_with = Borders.RIGHT
-            collision_point = (right_border_x, top_border_y / 2)
-        else:
-            border_collided_with = Borders.LEFT
-            collision_point = (0, top_border_y / 2)
+        if clockwise_angle_from_right > pi:
+            dydx = tan(clockwise_angle_from_right)
+            # line: x = my + c
+            # m = dydx
+            # c = x - my for x:400, y:300
+            c = (right_border_x / 2) - dydx * (top_border_y / 2)
 
+            # resolve upwards
+            # target: y = top_border_y
+            # x = c + top_border_y * dydx
+            x = c + top_border_y * dydx
+            if x > left_border_x and x < right_border_x:
+                return (Borders.BOTTOM, (x, bottom_border_y))
+            elif x <= left_border_x:
+                # 0 = dydx * y + c
+                # -c / dydx = y
+                left_wall_intersect = -c / dydx
+                return (Borders.LEFT, (left_border_x, left_wall_intersect))
+            else:
+                # right_border_x = dydx * y + c
+                # (right_border_x - c) / dydx = y
+                right_wall_intersect = (right_border_x - c) / dydx
+                return (Borders.RIGHT, (right_border_x, right_wall_intersect))
+        elif clockwise_angle_from_right < pi and clockwise_angle_from_right > 0:
+            dydx = tan(clockwise_angle_from_right)
+            # line: x = my + c
+            # m = dydx
+            # c = x - my for x:400, y:300
+            c = (right_border_x / 2) - dydx * (top_border_y / 2)
+
+            # resolve downwards
+            # target: y = 0 
+            # x = c
+            if c > left_border_x and c < right_border_x:
+                return (Borders.BOTTOM, (c, bottom_border_y))
+            elif c <= left_border_x:
+                # 0 = dydx * y + c
+                # -c / dydx = y
+                left_wall_intersect = -c / dydx
+                return (Borders.LEFT, (left_border_x, left_wall_intersect))
+            else:
+                # right_border_x = dydx * y + c
+                # (right_border_x - c) / dydx = y
+                right_wall_intersect = (right_border_x - c) / dydx
+                return (Borders.RIGHT, (right_border_x, right_wall_intersect))
+        elif clockwise_angle_from_right is 0:
+            return (Borders.RIGHT, (right_border_x, top_border_y / 2))
+        else:
+            return (Borders.LEFT, (left_border_x, top_border_y / 2))
+
+    def _create_single_asteroid(self):
+        direction = random() * 2 * pi
+
+        border_collided_with, collision_point = self._find_border_from_center(direction)
+        
         # place asteroid beyond border
         asteroid_width = 50
         border_offsets = {
