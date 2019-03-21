@@ -15,3 +15,6 @@ player = pyglet.resource.image("player_ship.png")
 player.height = player.height * player_scale
 player.width = player.width * player_scale
 center_image(player)
+
+asteroid = pyglet.resource.image("asteroid.png")
+center_image(asteroid)

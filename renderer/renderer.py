@@ -17,9 +17,11 @@ class Renderer():
 
         self._background_batch = pyglet.graphics.Batch()
         self._player_batch = pyglet.graphics.Batch()
+        self._asteroid_batch = pyglet.graphics.Batch()
 
         self._background_sprites = load_background(self._background_batch, window_dimensions)
         self._player_sprite = load_player_sprite(self._player_batch)
+        self._asteroid_sprites = []
         
         if update_callback is not None:
             def update(dt):
@@ -36,6 +38,7 @@ class Renderer():
 
             self._background_batch.draw()
             self._player_batch.draw()
+            self._asteroid_batch.draw()
         self._game_window.event(on_draw)
 
     @property
@@ -49,3 +52,16 @@ class Renderer():
         self._player_sprite.x = world.player.position[0]
         self._player_sprite.y = world.player.position[1]
         self._player_sprite.rotation = math.degrees(world.player.rotation)
+
+        difference_in_number_of_asteroids = len(world.asteroids) - len(self._asteroid_sprites)
+        if difference_in_number_of_asteroids > 0:
+            self._asteroid_sprites.extend([pyglet.sprite.Sprite(img=resources.asteroid, batch=self._asteroid_batch) for missing_asteroid_index in range(difference_in_number_of_asteroids)])
+        elif difference_in_number_of_asteroids < 0:
+            for deleting_asteroid in self._asteroid_sprites[-difference_in_number_of_asteroids:-1]:
+                deleting_asteroid.delete()
+            self._asteroid_sprites = self._asteroid_sprites[0:-difference_in_number_of_asteroids]
+        
+        for asteroid_physics_body, asteroid_sprite in zip(world.asteroids, self._asteroid_sprites):
+            asteroid_sprite.x = asteroid_physics_body.position[0]
+            asteroid_sprite.y = asteroid_physics_body.position[1]
+            asteroid_sprite.rotation = math.degrees(asteroid_physics_body.rotation)

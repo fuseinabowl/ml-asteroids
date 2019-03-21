@@ -32,12 +32,19 @@ class World():
         self._player_ship.rotational_friction = self._base_rotational_friction + self._thrust_extra_rotational_friction * player_actions.thrust
         self._player_ship.update()
 
+        for asteroid in self._asteroids:
+            asteroid.update()
+
     def add_player(self, player_controller):
         self._player_controller = player_controller
 
     @property
     def player(self):
         return self._player_ship
+
+    @property
+    def asteroids(self):
+        return self._asteroids
 
     def _create_starting_asteroids(self):
         return [self._create_single_asteroid() for x in range(5)]
@@ -132,8 +139,13 @@ class World():
         }
         velocity = border_velocity_generators[border_collided_with]()
 
+        max_rotational_velocity = 0.01
         new_asteroid = physics_object.PhysicsObject(
             x=asteroid_spawn_location[0], y=asteroid_spawn_location[1],
-            x_velocity=velocity[0], y_velocity=velocity[1]
+            x_velocity=velocity[0], y_velocity=velocity[1],
+            friction=0,
+            rotation=random() * pi * 2,
+            rotational_velocity= (random() * 2 - 1) * max_rotational_velocity,
+            rotational_friction=0
         )
         return new_asteroid
