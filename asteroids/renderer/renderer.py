@@ -69,9 +69,9 @@ class Renderer():
         if difference_in_number_of_asteroids > 0:
             self._asteroid_sprites.extend([pyglet.sprite.Sprite(img=resources.asteroid, batch=self._asteroid_batch) for missing_asteroid_index in range(difference_in_number_of_asteroids)])
         elif difference_in_number_of_asteroids < 0:
-            for deleting_asteroid in self._asteroid_sprites[-difference_in_number_of_asteroids:-1]:
+            for deleting_asteroid in self._asteroid_sprites[:-difference_in_number_of_asteroids]:
                 deleting_asteroid.delete()
-            self._asteroid_sprites = self._asteroid_sprites[0:-difference_in_number_of_asteroids]
+            self._asteroid_sprites = self._asteroid_sprites[-difference_in_number_of_asteroids:]
         
         for asteroid_physics_body, asteroid_sprite in zip(world.asteroids, self._asteroid_sprites):
             asteroid_sprite.x = asteroid_physics_body.position[0]
