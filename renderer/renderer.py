@@ -1,4 +1,5 @@
 import pyglet
+from pyglet import clock
 import math
 
 from . import background, resources
@@ -23,11 +24,18 @@ class Renderer():
         self._player_sprite = load_player_sprite(self._player_batch)
         self._asteroid_sprites = []
         
+        game_framerate = 1/120
+
         if update_callback is not None:
+            self.unconsumed_time = 0
             def update(dt):
-                update_callback()
+                self.unconsumed_time = self.unconsumed_time + dt
+                frames_to_consume = math.floor(self.unconsumed_time / game_framerate)
+                for _ in range(frames_to_consume):
+                    update_callback()
+                self.unconsumed_time = self.unconsumed_time - frames_to_consume * game_framerate
             
-            pyglet.clock.schedule_interval(update, 1 / 120.0)
+            pyglet.clock.schedule_interval(update, game_framerate)
 
         self._get_world = get_world_callback
 
