@@ -3,7 +3,7 @@ from random import random
 from typing import Tuple
 import numpy as np
 
-from . import single_frame_actions, physics_object
+from . import single_frame_actions, physics_object, player_ship
 
 class Borders:
     LEFT, TOP, RIGHT, BOTTOM = range(4)
@@ -22,7 +22,7 @@ class World():
         self._thrust_extra_turn_thrust = -0.001
         self._base_rotational_friction = 0.1
         self._thrust_extra_rotational_friction = 0.1
-        self._player_ship = physics_object.PhysicsObject(x=50,y=50)
+        self._player_ship = player_ship.PlayerShip(x=50,y=50)
         self._player_controller = None
 
         self._asteroids = self._create_starting_asteroids()
@@ -37,9 +37,15 @@ class World():
         self._player_ship.rotational_friction = self._base_rotational_friction + self._thrust_extra_rotational_friction * player_actions.thrust
         self._player_ship.update()
 
+        asteroids_to_remove = []
         for asteroid in self._asteroids:
             asteroid.update()
-            self._check_player_collision_with_asteroid(asteroid)
+            if self._check_player_collision_with_asteroid(asteroid):
+                self._player_ship.current_health = self._player_ship.current_health - 1
+                asteroids_to_remove.append(asteroid)
+
+        for dead_asteroid in asteroids_to_remove:
+            self._asteroids.remove(dead_asteroid)
 
     def add_player(self, player_controller):
         self._player_controller = player_controller
@@ -159,5 +165,4 @@ class World():
     def _check_player_collision_with_asteroid(self, asteroid : physics_object):
         vector_between_objects = self._player_ship.position - asteroid.position
         distance_between_objects = sum(vector_between_objects ** 2)
-        if distance_between_objects < (PLAYER_RADIUS + ASTEROID_RADIUS) ** 2:
-            print('collision occured')
+        return distance_between_objects < (PLAYER_RADIUS + ASTEROID_RADIUS) ** 2
