@@ -10,11 +10,19 @@ def center_image(image : pyglet.resource.image):
 
 background = pyglet.resource.image("purple.png")
 
-player_scale = 0.5
-player = pyglet.resource.image("player_ship.png")
-player.height = player.height * player_scale
-player.width = player.width * player_scale
-center_image(player)
+def load_player_ship_asset(file_name : str):
+    image = pyglet.resource.image(file_name)
+    player_scale = 0.5
+    image.height = image.height * player_scale
+    image.width = image.width * player_scale
+    center_image(image)
+    return image
+
+player = load_player_ship_asset("player_ship.png")
+player_damage = [load_player_ship_asset(damage_filename) for damage_filename in [
+    "playerShip1_damage1.png",
+    "playerShip1_damage2.png",
+    "playerShip1_damage3.png"]]
 
 asteroid = pyglet.resource.image("asteroid.png")
 center_image(asteroid)
