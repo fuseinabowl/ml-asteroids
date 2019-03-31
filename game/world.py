@@ -8,6 +8,9 @@ from . import single_frame_actions, physics_object
 class Borders:
     LEFT, TOP, RIGHT, BOTTOM = range(4)
 
+PLAYER_RADIUS = 40
+ASTEROID_RADIUS = 50
+
 class World():
     def __init__(self):
         self._player_maximum_thrust = 0.3
@@ -132,13 +135,13 @@ class World():
             angle_range = end_angle - start_angle
             def generate_velocity():
                 chosen_angle = start_angle + random() * angle_range
-                return (sin(chosen_angle) * asteroid_speed, cos(chosen_angle) * asteroid_speed)
+                return (cos(chosen_angle) * asteroid_speed, sin(chosen_angle) * asteroid_speed)
             return generate_velocity
         border_velocity_generators = {
-            Borders.LEFT: create_velocity_generator    (-1 * pi / 2, 1 * pi / 2),
-            Borders.TOP: create_velocity_generator     ( 1 * pi / 2, 3 * pi / 2),
-            Borders.RIGHT: create_velocity_generator   ( 3 * pi / 2, 5 * pi / 2),
-            Borders.BOTTOM: create_velocity_generator  ( 5 * pi / 2, 7 *pi / 2)
+            Borders.LEFT: create_velocity_generator    (-1 * pi / 4, 1 * pi / 4),
+            Borders.TOP: create_velocity_generator     ( 1 * pi / 4, 3 * pi / 4),
+            Borders.RIGHT: create_velocity_generator   ( 3 * pi / 4, 5 * pi / 4),
+            Borders.BOTTOM: create_velocity_generator  ( 5 * pi / 4, 7 * pi / 4)
         }
         velocity = border_velocity_generators[border_collided_with]()
 
@@ -153,5 +156,8 @@ class World():
         )
         return new_asteroid
 
-    def _check_player_collision_with_asteroid(self, asteroid):
-        distance_between_objects = [self._player_ship.position]
+    def _check_player_collision_with_asteroid(self, asteroid : physics_object):
+        vector_between_objects = self._player_ship.position - asteroid.position
+        distance_between_objects = sum(vector_between_objects ** 2)
+        if distance_between_objects < (PLAYER_RADIUS + ASTEROID_RADIUS) ** 2:
+            print('collision occured')
