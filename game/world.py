@@ -1,6 +1,7 @@
 from math import sin, cos, tan, pi
 from random import random
 from typing import Tuple
+import numpy as np
 
 from . import single_frame_actions, physics_object
 
@@ -27,13 +28,15 @@ class World():
         self._player_ship.rotational_velocity = self._player_ship.rotational_velocity + player_actions.turn_speed * (self._player_maximum_turn_thrust + self._thrust_extra_turn_thrust * player_actions.thrust)
         self._player_ship.friction = self._player_base_friction + self._player_thrust_extra_friction * player_actions.thrust
 
-        player_forward_vector = [sin(self._player_ship.rotation), cos(self._player_ship.rotation)]
-        self._player_ship.velocity = [respective_velocity + player_actions.thrust * self._player_maximum_thrust * respective_player_forward_vector for respective_velocity, respective_player_forward_vector in zip(self._player_ship.velocity, player_forward_vector)]
+        player_forward_vector = np.array([sin(self._player_ship.rotation), cos(self._player_ship.rotation)])
+        player_thrust = player_forward_vector * (player_actions.thrust * self._player_maximum_thrust)
+        self._player_ship.velocity = self._player_ship.velocity + player_thrust
         self._player_ship.rotational_friction = self._base_rotational_friction + self._thrust_extra_rotational_friction * player_actions.thrust
         self._player_ship.update()
 
         for asteroid in self._asteroids:
             asteroid.update()
+            self._check_player_collision_with_asteroid(asteroid)
 
     def add_player(self, player_controller):
         self._player_controller = player_controller
@@ -149,3 +152,6 @@ class World():
             rotational_friction=0
         )
         return new_asteroid
+
+    def _check_player_collision_with_asteroid(self, asteroid):
+        distance_between_objects = [self._player_ship.position]

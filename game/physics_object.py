@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 class PhysicsObject():
     def __init__(self, 
@@ -9,16 +10,16 @@ class PhysicsObject():
             friction:float=0.01,
             rotational_friction:float=0.02
     ):
-        self.position = [x,y]
-        self.velocity = [x_velocity,y_velocity]
+        self.position = np.array([x,y])
+        self.velocity = np.array([x_velocity,y_velocity])
         self.rotation = rotation
-        self.rotational_velocity =rotational_velocity
+        self.rotational_velocity = rotational_velocity
         self.friction = friction
         self.rotational_friction = rotational_friction
 
     def update(self):
-        self.position = [position + velocity for position, velocity in zip(self.position, self.velocity)]
-        self.velocity = [velocity * (1 - self.friction) for velocity in self.velocity]
+        self.position = self.position + self.velocity
+        self.velocity = self.velocity * (1 - self.friction)
 
         new_rotation = self.rotation + self.rotational_velocity
         self.rotation = new_rotation % (2 * math.pi)
