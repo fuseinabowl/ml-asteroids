@@ -14,6 +14,8 @@ def load_background(background_batch, window_dimensions):
 def load_player_sprite(player_batch):
     return pyglet.sprite.Sprite(img=resources.player, batch=player_batch)
 
+MAX_UNCONSUMED_TIME = 0.05
+
 class Renderer():
     def __init__(self, update_callback : Callable[[], None]= None, get_world_callback : Callable[[], World] = None):
         self._game_window = pyglet.window.Window(window_dimensions['x'], window_dimensions['y'])
@@ -31,7 +33,7 @@ class Renderer():
         if update_callback is not None:
             self.unconsumed_time = 0
             def update(dt):
-                self.unconsumed_time = self.unconsumed_time + dt
+                self.unconsumed_time = min(self.unconsumed_time + dt, MAX_UNCONSUMED_TIME)
                 frames_to_consume = math.floor(self.unconsumed_time / game_framerate)
                 for _ in range(frames_to_consume):
                     update_callback()
