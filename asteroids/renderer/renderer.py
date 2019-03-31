@@ -1,6 +1,7 @@
 import pyglet
 from pyglet import clock
 import math
+from typing import Callable
 
 from ..game.world import World
 from . import background, resources
@@ -14,7 +15,7 @@ def load_player_sprite(player_batch):
     return pyglet.sprite.Sprite(img=resources.player, batch=player_batch)
 
 class Renderer():
-    def __init__(self, update_callback = None, get_world_callback = None):
+    def __init__(self, update_callback : Callable[[], None]= None, get_world_callback : Callable[[], World] = None):
         self._game_window = pyglet.window.Window(window_dimensions['x'], window_dimensions['y'])
 
         self._background_batch = pyglet.graphics.Batch()
