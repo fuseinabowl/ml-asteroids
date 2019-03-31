@@ -1,6 +1,6 @@
 import pyglet
 
-pyglet.resource.path = ['renderer/resources']
+pyglet.resource.path = ['asteroids/renderer/resources']
 pyglet.resource.reindex()
 
 def center_image(image : pyglet.resource.image):

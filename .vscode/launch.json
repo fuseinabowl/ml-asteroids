@@ -8,7 +8,7 @@
             "name": "Python: Asteroids",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/asteroids.py",
+            "program": "${workspaceFolder}/human_asteroids.py",
             "console": "integratedTerminal"
         },
         {

@@ -1,7 +1,7 @@
 import pyglet
 
-from game import human_player, world
-from renderer import renderer
+from .game import human_player, world
+from .renderer import renderer
 
 def main():
     instance_world = world.World()
@@ -20,6 +20,3 @@ def main():
     instance_world.add_player(player)
 
     renderer_instance.run()
-
-if __name__ == '__main__':
-    main()

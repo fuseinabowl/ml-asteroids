@@ -2,6 +2,7 @@ import pyglet
 from pyglet import clock
 import math
 
+from ..game.world import World
 from . import background, resources
 
 window_dimensions = {'x':800, 'y':600}
