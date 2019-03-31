@@ -73,7 +73,7 @@ class World():
             # x = c + top_border_y * dydx
             x = c + top_border_y * dydx
             if x > left_border_x and x < right_border_x:
-                return (Borders.BOTTOM, (x, bottom_border_y))
+                return (Borders.TOP, (x, top_border_y))
             elif x <= left_border_x:
                 # 0 = dydx * y + c
                 # -c / dydx = y
@@ -135,7 +135,7 @@ class World():
             angle_range = end_angle - start_angle
             def generate_velocity():
                 chosen_angle = start_angle + random() * angle_range
-                return (cos(chosen_angle) * asteroid_speed, sin(chosen_angle) * asteroid_speed)
+                return (cos(chosen_angle) * asteroid_speed, -sin(chosen_angle) * asteroid_speed)
             return generate_velocity
         border_velocity_generators = {
             Borders.LEFT: create_velocity_generator    (-1 * pi / 4, 1 * pi / 4),
