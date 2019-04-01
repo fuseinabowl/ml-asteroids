@@ -23,7 +23,8 @@ asteroids implementation
 + player input abstraction (keyboard vs ML input)
 + player movement
 + asteroid movement
-- asteroid player collision
++ asteroid player collision
+- add death
 - player edge of screen collision
 - asteroid edge of screen collision
 - continuous asteroid respawn
