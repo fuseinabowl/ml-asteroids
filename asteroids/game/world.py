@@ -9,7 +9,7 @@ from .update_result import UpdateResult
 class Borders:
     LEFT, TOP, RIGHT, BOTTOM = range(4)
 
-PLAYER_RADIUS = 40
+PLAYER_RADIUS = 20
 ASTEROID_RADIUS = 50
 
 class World():
