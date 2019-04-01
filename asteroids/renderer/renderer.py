@@ -1,7 +1,7 @@
 import pyglet
 from pyglet import clock
 import math
-from typing import Callable
+from typing import Callable, Tuple
 
 from ..game.world import World
 from . import background, resources
@@ -13,6 +13,19 @@ def load_background(background_batch, window_dimensions):
 
 def load_player_sprite(player_batch):
     return pyglet.sprite.Sprite(img=resources.player, batch=player_batch)
+
+def load_player_damage_sprites(player_batch, _player_sprite):
+    damage_sprites = []
+    for sprite_resource in resources.player_damage:
+        damage_sprite = pyglet.sprite.Sprite(img=sprite_resource, batch=player_batch)
+        damage_sprite.visible = False
+        damage_sprites.append(damage_sprite)
+    return damage_sprites
+
+def apply_coordinates_to_sprite(sprite : pyglet.sprite.Sprite, coordinates : Tuple[float, float], rotation_in_radians : float):
+    sprite.x = coordinates[0]
+    sprite.y = coordinates[1]
+    sprite.rotation = math.degrees(rotation_in_radians)
 
 MAX_UNCONSUMED_TIME = 0.05
 
@@ -26,6 +39,7 @@ class Renderer():
 
         self._background_sprites = load_background(self._background_batch, window_dimensions)
         self._player_sprite = load_player_sprite(self._player_batch)
+        self._player_damage_sprites = load_player_damage_sprites(self._player_batch, self._player_sprite)
         self._asteroid_sprites = []
         
         game_framerate = 1/120
@@ -61,9 +75,10 @@ class Renderer():
         pyglet.app.run()
 
     def _apply_world_to_render_state(self, world):
-        self._player_sprite.x = world.player.position[0]
-        self._player_sprite.y = world.player.position[1]
-        self._player_sprite.rotation = math.degrees(world.player.rotation)
+
+        for sprite in [self._player_sprite] + self._player_damage_sprites:
+            apply_coordinates_to_sprite(sprite, world.player.position, world.player.rotation)
+        self._apply_damage_state_decals(world.player.current_health)
 
         difference_in_number_of_asteroids = len(world.asteroids) - len(self._asteroid_sprites)
         if difference_in_number_of_asteroids > 0:
@@ -74,6 +89,17 @@ class Renderer():
             self._asteroid_sprites = self._asteroid_sprites[-difference_in_number_of_asteroids:]
         
         for asteroid_physics_body, asteroid_sprite in zip(world.asteroids, self._asteroid_sprites):
-            asteroid_sprite.x = asteroid_physics_body.position[0]
-            asteroid_sprite.y = asteroid_physics_body.position[1]
-            asteroid_sprite.rotation = math.degrees(asteroid_physics_body.rotation)
+            apply_coordinates_to_sprite(asteroid_sprite, asteroid_physics_body.position, asteroid_physics_body.rotation)
+
+    def _apply_damage_state_decals(self, current_health):
+        sprite_index_to_enable = None
+
+        if current_health == 2:
+            sprite_index_to_enable = 0
+        elif current_health == 1:
+            sprite_index_to_enable = 1
+        elif current_health <= 0:
+            sprite_index_to_enable = 2
+
+        for sprite_index, sprite in enumerate(self._player_damage_sprites):
+            sprite.visible = sprite_index == sprite_index_to_enable
