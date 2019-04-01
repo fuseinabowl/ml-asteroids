@@ -4,6 +4,7 @@ from typing import Tuple
 import numpy as np
 
 from . import single_frame_actions, physics_object, player_ship
+from .update_result import UpdateResult
 
 class Borders:
     LEFT, TOP, RIGHT, BOTTOM = range(4)
@@ -46,6 +47,8 @@ class World():
 
         for dead_asteroid in asteroids_to_remove:
             self._asteroids.remove(dead_asteroid)
+
+        return UpdateResult.CONTINUE_GAME if self._player_ship.current_health > 0 else UpdateResult.GAME_COMPLETED
 
     def add_player(self, player_controller):
         self._player_controller = player_controller

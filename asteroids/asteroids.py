@@ -9,7 +9,7 @@ def main():
     def update_game():
         player_perceived_world_state = player.gather_player_perceived_world_state(instance_world)
         player_actions = player.get_this_frame_actions(player_perceived_world_state)
-        instance_world.update(player_actions)
+        return instance_world.update(player_actions)
 
     def get_world():
         return instance_world

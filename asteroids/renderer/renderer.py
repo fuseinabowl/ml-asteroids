@@ -4,6 +4,7 @@ import math
 from typing import Callable, Tuple
 
 from ..game.world import World
+from ..game.update_result import UpdateResult
 from . import background, resources
 
 window_dimensions = {'x':800, 'y':600}
@@ -30,7 +31,7 @@ def apply_coordinates_to_sprite(sprite : pyglet.sprite.Sprite, coordinates : Tup
 MAX_UNCONSUMED_TIME = 0.05
 
 class Renderer():
-    def __init__(self, update_callback : Callable[[], None]= None, get_world_callback : Callable[[], World] = None):
+    def __init__(self, update_callback : Callable[[], UpdateResult]= None, get_world_callback : Callable[[], World] = None):
         self._game_window = pyglet.window.Window(window_dimensions['x'], window_dimensions['y'])
 
         self._background_batch = pyglet.graphics.Batch()
@@ -44,16 +45,17 @@ class Renderer():
         
         game_framerate = 1/120
 
-        if update_callback is not None:
-            self.unconsumed_time = 0
-            def update(dt):
-                self.unconsumed_time = min(self.unconsumed_time + dt, MAX_UNCONSUMED_TIME)
-                frames_to_consume = math.floor(self.unconsumed_time / game_framerate)
-                for _ in range(frames_to_consume):
-                    update_callback()
-                self.unconsumed_time = self.unconsumed_time - frames_to_consume * game_framerate
-            
-            pyglet.clock.schedule_interval(update, game_framerate)
+        self.unconsumed_time = 0
+        def update(dt):
+            self.unconsumed_time = min(self.unconsumed_time + dt, MAX_UNCONSUMED_TIME)
+            frames_to_consume = math.floor(self.unconsumed_time / game_framerate)
+            for _ in range(frames_to_consume):
+                update_result = update_callback()
+                if update_result is UpdateResult.GAME_COMPLETED:
+                    self._game_window.close()
+            self.unconsumed_time = self.unconsumed_time - frames_to_consume * game_framerate
+        
+        pyglet.clock.schedule_interval(update, game_framerate)
 
         self._get_world = get_world_callback
 
