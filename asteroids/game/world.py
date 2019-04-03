@@ -100,9 +100,9 @@ class World():
 
     def _find_border_from_center(self, clockwise_angle_from_right : float) -> Tuple[int, Tuple[float, float]]:
         left_border_x = 0
-        right_border_x = 800
+        right_border_x = 80
         bottom_border_y = 0
-        top_border_y = 600
+        top_border_y = 60
 
         if clockwise_angle_from_right > pi:
             dydx = tan(clockwise_angle_from_right)
