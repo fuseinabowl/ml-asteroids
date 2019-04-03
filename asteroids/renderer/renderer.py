@@ -24,15 +24,13 @@ def load_player_damage_sprites(player_batch, _player_sprite):
         damage_sprites.append(damage_sprite)
     return damage_sprites
 
-def apply_coordinates_to_sprite(sprite : pyglet.sprite.Sprite, body : Box2D.b2Body):
-    sprite.x, sprite.y = body.position
-    sprite.rotation = math.degrees(body.angle)
-
 MAX_UNCONSUMED_TIME = 0.05
 
 class Renderer():
     def __init__(self, update_callback : Callable[[], UpdateResult]= None, get_world_callback : Callable[[], World] = None):
         self._game_window = pyglet.window.Window(window_dimensions['x'], window_dimensions['y'])
+
+        self._magnification = 10
 
         self._background_batch = pyglet.graphics.Batch()
         self._player_batch = pyglet.graphics.Batch()
@@ -69,6 +67,10 @@ class Renderer():
             self._asteroid_batch.draw()
         self._game_window.event(on_draw)
 
+    def _apply_coordinates_to_sprite(self, sprite : pyglet.sprite.Sprite, body : Box2D.b2Body):
+        sprite.x, sprite.y = body.position * self._magnification
+        sprite.rotation = math.degrees(body.angle)
+
     @property
     def game_window(self):
         return self._game_window
@@ -79,7 +81,7 @@ class Renderer():
     def _apply_world_to_render_state(self, world):
 
         for sprite in [self._player_sprite] + self._player_damage_sprites:
-            apply_coordinates_to_sprite(sprite, world.player)
+            self._apply_coordinates_to_sprite(sprite, world.player)
         self._apply_damage_state_decals(world.player_current_health)
 
         difference_in_number_of_asteroids = len(world.asteroids) - len(self._asteroid_sprites)
@@ -91,7 +93,7 @@ class Renderer():
             self._asteroid_sprites = self._asteroid_sprites[-difference_in_number_of_asteroids:]
         
         for asteroid_physics_body, asteroid_sprite in zip(world.asteroids, self._asteroid_sprites):
-            apply_coordinates_to_sprite(asteroid_sprite, asteroid_physics_body)
+            self._apply_coordinates_to_sprite(asteroid_sprite, asteroid_physics_body)
 
     def _apply_damage_state_decals(self, current_health):
         sprite_index_to_enable = None

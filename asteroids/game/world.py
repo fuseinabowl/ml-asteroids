@@ -21,21 +21,21 @@ class World():
         self._physics_world = Box2D.b2World(gravity=(0,0), doSleep=False)
 
         self._asteroid_shape = Box2D.b2CircleShape()
-        self._asteroid_shape.radius = 40
+        self._asteroid_shape.radius = 2
 
         self._asteroid_fixture = Box2D.b2FixtureDef()
         self._asteroid_fixture.shape = self._asteroid_shape
-        self._asteroid_fixture.density = 0.001
+        self._asteroid_fixture.density = 2
 
         self._ship_shape = Box2D.b2CircleShape()
-        self._ship_shape.radius = 20
+        self._ship_shape.radius = 1
 
         ship_fixture = Box2D.b2FixtureDef()
         ship_fixture.shape = self._ship_shape
-        ship_fixture.density = 0.0001
+        ship_fixture.density = 15
 
-        self._player_base_friction = 0.0001
-        self._player_thrust_extra_friction = 0
+        self._player_base_friction = 0.02
+        self._player_thrust_extra_friction = 0.1
 
         self._player_maximum_turn_thrust = 0.2
         self._thrust_extra_turn_thrust = -0.1
@@ -43,7 +43,7 @@ class World():
         self._thrust_extra_rotational_friction = 0.05
 
         ship_body_def = Box2D.b2BodyDef()
-        ship_body_def.position = (50, 50)
+        ship_body_def.position = (5, 5)
         ship_body_def.angle = random() * pi * 2
         ship_body_def.linearVelocity = (0,0)
         ship_body_def.linearDamping = self._player_base_friction
@@ -61,15 +61,14 @@ class World():
 
     def update(self, player_actions : single_frame_actions.SingleFrameActions):
         self._player_ship.ApplyAngularImpulse(player_actions.turn_speed * (self._player_maximum_turn_thrust + self._thrust_extra_turn_thrust * player_actions.thrust), True)
-        self._player_ship.linearFriction = self._player_base_friction# + self._player_thrust_extra_friction * player_actions.thrust
+        self._player_ship.linearDamping = self._player_base_friction# + self._player_thrust_extra_friction * player_actions.thrust
+
+        print (self._player_ship.mass)
 
         player_forward_vector = np.array([sin(self._player_ship.angle), cos(self._player_ship.angle)])
         player_thrust = player_forward_vector * (player_actions.thrust * self._player_maximum_thrust)
         self._player_ship.ApplyLinearImpulse(player_thrust, point=self._player_ship.position, wake=True)
         self._player_ship.angularDamping = self._base_rotational_friction + self._thrust_extra_rotational_friction * player_actions.thrust
-
-        print (player_thrust)
-        print (self._player_ship.linearVelocity)
 
 #        asteroids_to_remove = []
 #        for asteroid in self._asteroids:
