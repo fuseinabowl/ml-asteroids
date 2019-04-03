@@ -16,7 +16,7 @@ ASTEROID_RADIUS = 50
 
 class World():
     def __init__(self):
-        self._player_maximum_thrust = 1
+        self._player_maximum_thrust = 2
 
         self._physics_world = Box2D.b2World(gravity=(0,0), doSleep=False)
 
@@ -35,10 +35,10 @@ class World():
         ship_fixture.density = 5
 
         self._player_base_friction = 0.02
-        self._player_thrust_extra_friction = 0.1
+        self._player_thrust_extra_friction = 0.02
 
-        self._player_maximum_turn_thrust = 0.2
-        self._thrust_extra_turn_thrust = -0.1
+        self._player_maximum_turn_thrust = 1
+        self._thrust_extra_turn_thrust = -0.3
         self._base_rotational_friction = 0.1
         self._thrust_extra_rotational_friction = 0.05
 
