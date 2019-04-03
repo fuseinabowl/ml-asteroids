@@ -21,18 +21,18 @@ class World():
         self._physics_world = Box2D.b2World(gravity=(0,0), doSleep=False)
 
         self._asteroid_shape = Box2D.b2CircleShape()
-        self._asteroid_shape.radius = 2
+        self._asteroid_shape.radius = 5
 
         self._asteroid_fixture = Box2D.b2FixtureDef()
         self._asteroid_fixture.shape = self._asteroid_shape
-        self._asteroid_fixture.density = 2
+        self._asteroid_fixture.density = 10
 
         self._ship_shape = Box2D.b2CircleShape()
-        self._ship_shape.radius = 1
+        self._ship_shape.radius = 2
 
         ship_fixture = Box2D.b2FixtureDef()
         ship_fixture.shape = self._ship_shape
-        ship_fixture.density = 15
+        ship_fixture.density = 5
 
         self._player_base_friction = 0.02
         self._player_thrust_extra_friction = 0.1
