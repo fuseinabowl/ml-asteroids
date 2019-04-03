@@ -174,7 +174,7 @@ class World():
         asteroid_spawn_location = tuple(collision_coordinate + offset_coordinate for collision_coordinate, offset_coordinate in zip(collision_point, border_offset))
 
         # make asteroids fly in
-        asteroid_speed = 1
+        asteroid_speed = 0.05
         def create_velocity_generator(start_angle, end_angle):
             angle_range = end_angle - start_angle
             def generate_velocity():
