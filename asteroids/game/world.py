@@ -64,8 +64,6 @@ class World():
         self._player_ship.ApplyAngularImpulse(player_actions.turn_speed * (self._player_maximum_turn_thrust + self._thrust_extra_turn_thrust * player_actions.thrust), True)
         self._player_ship.linearDamping = self._player_base_friction# + self._player_thrust_extra_friction * player_actions.thrust
 
-        print (self._player_ship.mass)
-
         player_forward_vector = np.array([sin(self._player_ship.angle), cos(self._player_ship.angle)])
         player_thrust = player_forward_vector * (player_actions.thrust * self._player_maximum_thrust)
         self._player_ship.ApplyLinearImpulse(player_thrust, point=self._player_ship.position, wake=True)
