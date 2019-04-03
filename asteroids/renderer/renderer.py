@@ -2,6 +2,7 @@ import pyglet
 from pyglet import clock
 import math
 from typing import Callable, Tuple
+import Box2D
 
 from ..game.world import World
 from ..game.update_result import UpdateResult
@@ -23,10 +24,9 @@ def load_player_damage_sprites(player_batch, _player_sprite):
         damage_sprites.append(damage_sprite)
     return damage_sprites
 
-def apply_coordinates_to_sprite(sprite : pyglet.sprite.Sprite, coordinates : Tuple[float, float], rotation_in_radians : float):
-    sprite.x = coordinates[0]
-    sprite.y = coordinates[1]
-    sprite.rotation = math.degrees(rotation_in_radians)
+def apply_coordinates_to_sprite(sprite : pyglet.sprite.Sprite, body : Box2D.b2Body):
+    sprite.x, sprite.y = body.position
+    sprite.rotation = math.degrees(body.angle)
 
 MAX_UNCONSUMED_TIME = 0.05
 
@@ -79,8 +79,8 @@ class Renderer():
     def _apply_world_to_render_state(self, world):
 
         for sprite in [self._player_sprite] + self._player_damage_sprites:
-            apply_coordinates_to_sprite(sprite, world.player.position, world.player.rotation)
-        self._apply_damage_state_decals(world.player.current_health)
+            apply_coordinates_to_sprite(sprite, world.player)
+        self._apply_damage_state_decals(world.player_current_health)
 
         difference_in_number_of_asteroids = len(world.asteroids) - len(self._asteroid_sprites)
         if difference_in_number_of_asteroids > 0:
@@ -91,7 +91,7 @@ class Renderer():
             self._asteroid_sprites = self._asteroid_sprites[-difference_in_number_of_asteroids:]
         
         for asteroid_physics_body, asteroid_sprite in zip(world.asteroids, self._asteroid_sprites):
-            apply_coordinates_to_sprite(asteroid_sprite, asteroid_physics_body.position, asteroid_physics_body.rotation)
+            apply_coordinates_to_sprite(asteroid_sprite, asteroid_physics_body)
 
     def _apply_damage_state_decals(self, current_health):
         sprite_index_to_enable = None

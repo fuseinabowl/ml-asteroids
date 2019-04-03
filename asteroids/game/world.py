@@ -3,6 +3,8 @@ from random import random
 from typing import Tuple
 import numpy as np
 
+import Box2D
+
 from . import single_frame_actions, physics_object, player_ship
 from .update_result import UpdateResult
 
@@ -14,41 +16,74 @@ ASTEROID_RADIUS = 50
 
 class World():
     def __init__(self):
-        self._player_maximum_thrust = 0.3
+        self._player_maximum_thrust = 1
 
-        self._player_base_friction = 0.01
-        self._player_thrust_extra_friction = 0.05
+        self._physics_world = Box2D.b2World(gravity=(0,0), doSleep=False)
 
-        self._player_maximum_turn_thrust = 0.005
-        self._thrust_extra_turn_thrust = -0.001
+        self._asteroid_shape = Box2D.b2CircleShape()
+        self._asteroid_shape.radius = 40
+
+        self._asteroid_fixture = Box2D.b2FixtureDef()
+        self._asteroid_fixture.shape = self._asteroid_shape
+        self._asteroid_fixture.density = 0.001
+
+        self._ship_shape = Box2D.b2CircleShape()
+        self._ship_shape.radius = 20
+
+        ship_fixture = Box2D.b2FixtureDef()
+        ship_fixture.shape = self._ship_shape
+        ship_fixture.density = 0.0001
+
+        self._player_base_friction = 0.0001
+        self._player_thrust_extra_friction = 0
+
+        self._player_maximum_turn_thrust = 0.2
+        self._thrust_extra_turn_thrust = -0.1
         self._base_rotational_friction = 0.1
-        self._thrust_extra_rotational_friction = 0.1
-        self._player_ship = player_ship.PlayerShip(x=50,y=50)
+        self._thrust_extra_rotational_friction = 0.05
+
+        ship_body_def = Box2D.b2BodyDef()
+        ship_body_def.position = (50, 50)
+        ship_body_def.angle = random() * pi * 2
+        ship_body_def.linearVelocity = (0,0)
+        ship_body_def.linearDamping = self._player_base_friction
+        ship_body_def.angularVelocity = 0
+        ship_body_def.angularDamping = self._base_rotational_friction
+        ship_body_def.fixtures = [ship_fixture]
+        ship_body_def.type = Box2D.b2_dynamicBody
+
+        self._player_ship = self._physics_world.CreateBody(ship_body_def)
         self._player_controller = None
 
         self._asteroids = self._create_starting_asteroids()
 
+        self.player_current_health = 3
+
     def update(self, player_actions : single_frame_actions.SingleFrameActions):
-        self._player_ship.rotational_velocity = self._player_ship.rotational_velocity + player_actions.turn_speed * (self._player_maximum_turn_thrust + self._thrust_extra_turn_thrust * player_actions.thrust)
-        self._player_ship.friction = self._player_base_friction + self._player_thrust_extra_friction * player_actions.thrust
+        self._player_ship.ApplyAngularImpulse(player_actions.turn_speed * (self._player_maximum_turn_thrust + self._thrust_extra_turn_thrust * player_actions.thrust), True)
+        self._player_ship.linearFriction = self._player_base_friction# + self._player_thrust_extra_friction * player_actions.thrust
 
-        player_forward_vector = np.array([sin(self._player_ship.rotation), cos(self._player_ship.rotation)])
+        player_forward_vector = np.array([sin(self._player_ship.angle), cos(self._player_ship.angle)])
         player_thrust = player_forward_vector * (player_actions.thrust * self._player_maximum_thrust)
-        self._player_ship.velocity = self._player_ship.velocity + player_thrust
-        self._player_ship.rotational_friction = self._base_rotational_friction + self._thrust_extra_rotational_friction * player_actions.thrust
-        self._player_ship.update()
+        self._player_ship.ApplyLinearImpulse(player_thrust, point=self._player_ship.position, wake=True)
+        self._player_ship.angularDamping = self._base_rotational_friction + self._thrust_extra_rotational_friction * player_actions.thrust
 
-        asteroids_to_remove = []
-        for asteroid in self._asteroids:
-            asteroid.update()
-            if self._check_player_collision_with_asteroid(asteroid):
-                self._player_ship.current_health = self._player_ship.current_health - 1
-                asteroids_to_remove.append(asteroid)
+        print (player_thrust)
+        print (self._player_ship.linearVelocity)
 
-        for dead_asteroid in asteroids_to_remove:
-            self._asteroids.remove(dead_asteroid)
+#        asteroids_to_remove = []
+#        for asteroid in self._asteroids:
+#            asteroid.update()
+#            if self._check_player_collision_with_asteroid(asteroid):
+#                self._player_ship.current_health = self._player_ship.current_health - 1
+#                asteroids_to_remove.append(asteroid)
+#
+#        for dead_asteroid in asteroids_to_remove:
+#            self._asteroids.remove(dead_asteroid)
 
-        return UpdateResult.CONTINUE_GAME if self._player_ship.current_health > 0 else UpdateResult.GAME_COMPLETED
+        self._physics_world.Step(1, 6, 2)
+
+        return UpdateResult.CONTINUE_GAME if self.player_current_health > 0 else UpdateResult.GAME_COMPLETED
 
     def add_player(self, player_controller):
         self._player_controller = player_controller
@@ -155,14 +190,19 @@ class World():
         velocity = border_velocity_generators[border_collided_with]()
 
         max_rotational_velocity = 0.01
-        new_asteroid = physics_object.PhysicsObject(
-            x=asteroid_spawn_location[0], y=asteroid_spawn_location[1],
-            x_velocity=velocity[0], y_velocity=velocity[1],
-            friction=0,
-            rotation=random() * pi * 2,
-            rotational_velocity= (random() * 2 - 1) * max_rotational_velocity,
-            rotational_friction=0
-        )
+
+        asteroid_body_def = Box2D.b2BodyDef()
+        asteroid_body_def.position = asteroid_spawn_location
+        asteroid_body_def.angle = random() * pi * 2
+        asteroid_body_def.linearVelocity = velocity
+        asteroid_body_def.linearDamping = 0
+        asteroid_body_def.angularVelocity = (random() * 2 - 1) * max_rotational_velocity
+        asteroid_body_def.angularDamping = 0
+        asteroid_body_def.fixtures = [self._asteroid_fixture]
+        asteroid_body_def.type = Box2D.b2_dynamicBody
+
+        new_asteroid = self._physics_world.CreateBody(asteroid_body_def)
+
         return new_asteroid
 
     def _check_player_collision_with_asteroid(self, asteroid : physics_object):
