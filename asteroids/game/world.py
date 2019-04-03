@@ -51,6 +51,7 @@ class World():
         ship_body_def.angularDamping = self._base_rotational_friction
         ship_body_def.fixtures = [ship_fixture]
         ship_body_def.type = Box2D.b2_dynamicBody
+        ship_body_def.allowSleep = False
 
         self._player_ship = self._physics_world.CreateBody(ship_body_def)
         self._player_controller = None
@@ -199,6 +200,7 @@ class World():
         asteroid_body_def.angularDamping = 0
         asteroid_body_def.fixtures = [self._asteroid_fixture]
         asteroid_body_def.type = Box2D.b2_dynamicBody
+        asteroid_body_def.allowSleep = False
 
         new_asteroid = self._physics_world.CreateBody(asteroid_body_def)
 
