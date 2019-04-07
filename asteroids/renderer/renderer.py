@@ -98,12 +98,12 @@ class Renderer():
     def _apply_damage_state_decals(self, current_health):
         sprite_index_to_enable = None
 
-        if current_health == 2:
-            sprite_index_to_enable = 0
-        elif current_health == 1:
-            sprite_index_to_enable = 1
-        elif current_health <= 0:
+        if current_health <= 0:
             sprite_index_to_enable = 2
+        elif current_health < 1:
+            sprite_index_to_enable = 1
+        elif current_health < 2:
+            sprite_index_to_enable = 0
 
         for sprite_index, sprite in enumerate(self._player_damage_sprites):
             sprite.visible = sprite_index == sprite_index_to_enable

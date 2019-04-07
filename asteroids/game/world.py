@@ -7,6 +7,7 @@ import Box2D
 
 from . import single_frame_actions, physics_object, player_ship
 from .update_result import UpdateResult
+from .contact_damage_inflicter import ContactDamageInflicter
 
 class Borders:
     LEFT, TOP, RIGHT, BOTTOM = range(4)
@@ -14,11 +15,15 @@ class Borders:
 PLAYER_RADIUS = 2
 ASTEROID_RADIUS = 5
 
+CONTACT_IMPULSE_TO_DAMAGE_SCALAR = 0.001
+PLAYER_CONTACT_RESISTANCE = 0
+ASTEROID_CONTACT_RESISTANCE = 0.5
+
 class World():
     def __init__(self):
         self._player_maximum_thrust = 2
 
-        self._physics_world = Box2D.b2World(gravity=(0,0), doSleep=False)
+        self._physics_world = Box2D.b2World(gravity=(0,0), doSleep=False, contactListener=ContactDamageInflicter(self))
 
         self._asteroid_shape = Box2D.b2CircleShape()
         self._asteroid_shape.radius = ASTEROID_RADIUS
@@ -26,6 +31,8 @@ class World():
         self._asteroid_fixture = Box2D.b2FixtureDef()
         self._asteroid_fixture.shape = self._asteroid_shape
         self._asteroid_fixture.density = 10
+        self._asteroid_fixture.restitution = 1
+        self._asteroid_fixture.friction = 1
 
         self._ship_shape = Box2D.b2CircleShape()
         self._ship_shape.radius = PLAYER_RADIUS
@@ -33,6 +40,8 @@ class World():
         ship_fixture = Box2D.b2FixtureDef()
         ship_fixture.shape = self._ship_shape
         ship_fixture.density = 5
+        ship_fixture.restitution = 1
+        ship_fixture.friction = 1
 
         self._player_base_friction = 0.02
         self._player_thrust_extra_friction = 0.02
@@ -57,6 +66,7 @@ class World():
         self._player_controller = None
 
         self._asteroids = self._create_starting_asteroids()
+        self._asteroids_to_kill = []
 
         self.player_current_health = 3
 
@@ -71,16 +81,22 @@ class World():
 
         self._physics_world.Step(1, 6, 2)
 
-        for contact in self._player_ship.contacts:
-            dead_asteroid = contact.other
+        for dead_asteroid in self._asteroids_to_kill:
             self._physics_world.DestroyBody(dead_asteroid)
             self._asteroids.remove(dead_asteroid)
-            self.player_current_health = self.player_current_health - 1
+        self._asteroids_to_kill.clear()
 
         return UpdateResult.CONTINUE_GAME if self.player_current_health > 0 else UpdateResult.GAME_COMPLETED
 
     def add_player(self, player_controller):
         self._player_controller = player_controller
+
+    def player_impact(self, normal_impulse : float, tangent_impulse : float, impact_asteroid : Box2D.b2Body):
+        contact_raw_damage = (normal_impulse ** 2 + tangent_impulse ** 2) * CONTACT_IMPULSE_TO_DAMAGE_SCALAR
+        contact_player_damage = max(0, contact_raw_damage - PLAYER_CONTACT_RESISTANCE)
+        self.player_current_health = self.player_current_health - contact_player_damage
+        if contact_raw_damage > ASTEROID_CONTACT_RESISTANCE:
+            self._asteroids_to_kill.append(impact_asteroid)
 
     @property
     def player(self):
