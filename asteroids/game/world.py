@@ -11,8 +11,8 @@ from .update_result import UpdateResult
 class Borders:
     LEFT, TOP, RIGHT, BOTTOM = range(4)
 
-PLAYER_RADIUS = 20
-ASTEROID_RADIUS = 50
+PLAYER_RADIUS = 2
+ASTEROID_RADIUS = 5
 
 class World():
     def __init__(self):
@@ -21,14 +21,14 @@ class World():
         self._physics_world = Box2D.b2World(gravity=(0,0), doSleep=False)
 
         self._asteroid_shape = Box2D.b2CircleShape()
-        self._asteroid_shape.radius = 5
+        self._asteroid_shape.radius = ASTEROID_RADIUS
 
         self._asteroid_fixture = Box2D.b2FixtureDef()
         self._asteroid_fixture.shape = self._asteroid_shape
         self._asteroid_fixture.density = 10
 
         self._ship_shape = Box2D.b2CircleShape()
-        self._ship_shape.radius = 2
+        self._ship_shape.radius = PLAYER_RADIUS
 
         ship_fixture = Box2D.b2FixtureDef()
         ship_fixture.shape = self._ship_shape
@@ -159,12 +159,11 @@ class World():
         border_collided_with, collision_point = self._find_border_from_center(direction)
         
         # place asteroid beyond border
-        asteroid_width = 50
         border_offsets = {
-            Borders.LEFT: (-asteroid_width, 0),
-            Borders.TOP: (0, asteroid_width),
-            Borders.RIGHT: (asteroid_width, 0),
-            Borders.BOTTOM: (0, -asteroid_width)
+            Borders.LEFT: (-ASTEROID_RADIUS, 0),
+            Borders.TOP: (0, ASTEROID_RADIUS),
+            Borders.RIGHT: (ASTEROID_RADIUS, 0),
+            Borders.BOTTOM: (0, -ASTEROID_RADIUS)
         }
 
         border_offset = border_offsets[border_collided_with]
@@ -203,8 +202,3 @@ class World():
         new_asteroid = self._physics_world.CreateBody(asteroid_body_def)
 
         return new_asteroid
-
-    def _check_player_collision_with_asteroid(self, asteroid : physics_object):
-        vector_between_objects = self._player_ship.position - asteroid.position
-        distance_between_objects = sum(vector_between_objects ** 2)
-        return distance_between_objects < (PLAYER_RADIUS + ASTEROID_RADIUS) ** 2
