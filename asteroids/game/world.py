@@ -69,17 +69,13 @@ class World():
         self._player_ship.ApplyLinearImpulse(player_thrust, point=self._player_ship.position, wake=True)
         self._player_ship.angularDamping = self._base_rotational_friction + self._thrust_extra_rotational_friction * player_actions.thrust
 
-#        asteroids_to_remove = []
-#        for asteroid in self._asteroids:
-#            asteroid.update()
-#            if self._check_player_collision_with_asteroid(asteroid):
-#                self._player_ship.current_health = self._player_ship.current_health - 1
-#                asteroids_to_remove.append(asteroid)
-#
-#        for dead_asteroid in asteroids_to_remove:
-#            self._asteroids.remove(dead_asteroid)
-
         self._physics_world.Step(1, 6, 2)
+
+        for contact in self._player_ship.contacts:
+            dead_asteroid = contact.other
+            self._physics_world.DestroyBody(dead_asteroid)
+            self._asteroids.remove(dead_asteroid)
+            self.player_current_health = self.player_current_health - 1
 
         return UpdateResult.CONTINUE_GAME if self.player_current_health > 0 else UpdateResult.GAME_COMPLETED
 
