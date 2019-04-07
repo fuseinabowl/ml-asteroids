@@ -69,7 +69,7 @@ class Renderer():
 
     def _apply_coordinates_to_sprite(self, sprite : pyglet.sprite.Sprite, body : Box2D.b2Body):
         sprite.x, sprite.y = body.position * self._magnification
-        sprite.rotation = math.degrees(body.angle)
+        sprite.rotation = -math.degrees(body.angle)
 
     @property
     def game_window(self):

@@ -61,10 +61,10 @@ class World():
         self.player_current_health = 3
 
     def update(self, player_actions : single_frame_actions.SingleFrameActions):
-        self._player_ship.ApplyAngularImpulse(player_actions.turn_speed * (self._player_maximum_turn_thrust + self._thrust_extra_turn_thrust * player_actions.thrust), True)
+        self._player_ship.ApplyAngularImpulse(-player_actions.turn_speed * (self._player_maximum_turn_thrust + self._thrust_extra_turn_thrust * player_actions.thrust), True)
         self._player_ship.linearDamping = self._player_base_friction + self._player_thrust_extra_friction * player_actions.thrust
 
-        player_forward_vector = np.array([sin(self._player_ship.angle), cos(self._player_ship.angle)])
+        player_forward_vector = np.array([-sin(self._player_ship.angle), cos(self._player_ship.angle)])
         player_thrust = player_forward_vector * (player_actions.thrust * self._player_maximum_thrust)
         self._player_ship.ApplyLinearImpulse(player_thrust, point=self._player_ship.position, wake=True)
         self._player_ship.angularDamping = self._base_rotational_friction + self._thrust_extra_rotational_friction * player_actions.thrust
