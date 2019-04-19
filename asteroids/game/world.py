@@ -6,6 +6,7 @@ import numpy as np
 import Box2D
 
 from . import single_frame_actions, physics_object, player_ship, borders
+from .collision_filter_categories import CollisionFilterCategory
 from .update_result import UpdateResult
 from .contact_damage_inflicter import ContactDamageInflicter
 
@@ -38,6 +39,8 @@ class World():
         self._asteroid_fixture.density = 10
         self._asteroid_fixture.restitution = 1
         self._asteroid_fixture.friction = 1
+        self._asteroid_fixture.filter.categoryBits = CollisionFilterCategory.ASTEROID
+        self._asteroid_fixture.filter.maskBits = CollisionFilterCategory.ASTEROID | CollisionFilterCategory.PLAYER 
 
         self._ship_shape = Box2D.b2CircleShape()
         self._ship_shape.radius = PLAYER_RADIUS
@@ -47,6 +50,8 @@ class World():
         ship_fixture.density = 5
         ship_fixture.restitution = 1
         ship_fixture.friction = 1
+        ship_fixture.filter.categoryBits = CollisionFilterCategory.PLAYER
+        ship_fixture.filter.maskBits = CollisionFilterCategory.ASTEROID | CollisionFilterCategory.BORDER
 
         self._player_base_friction = 0.02
         self._player_thrust_extra_friction = 0.02

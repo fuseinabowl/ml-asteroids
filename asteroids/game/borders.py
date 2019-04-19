@@ -1,6 +1,8 @@
 
 import Box2D
 
+from .collision_filter_categories import CollisionFilterCategory
+
 def add_borders(world : Box2D.b2World, left_border : float, right_border : float, bottom_border : float, top_border : float):
     fixture_defs = _create_fixtures(left_border, right_border, bottom_border, top_border)
 
@@ -31,6 +33,7 @@ def _create_fixtures(left_border : float, right_border : float, bottom_border : 
         border_fixture_def.shape = side_border_shape
         border_fixture_def.friction = 0
         border_fixture_def.density = 0
+        border_fixture_def.filter.categoryBits = CollisionFilterCategory.BORDER
         fixture_defs.append(border_fixture_def)
     
     return fixture_defs
