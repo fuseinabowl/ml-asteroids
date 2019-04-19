@@ -25,7 +25,7 @@ asteroids implementation
 + asteroid movement
 + asteroid player collision
 + add death
-- player edge of screen collision
++ player edge of screen collision
 - asteroid edge of screen collision
 - continuous asteroid respawn
 - add scoring
