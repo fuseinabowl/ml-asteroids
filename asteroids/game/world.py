@@ -5,7 +5,7 @@ import numpy as np
 
 import Box2D
 
-from . import single_frame_actions, physics_object, player_ship
+from . import single_frame_actions, physics_object, player_ship, borders
 from .update_result import UpdateResult
 from .contact_damage_inflicter import ContactDamageInflicter
 
@@ -18,6 +18,11 @@ ASTEROID_RADIUS = 5
 CONTACT_IMPULSE_TO_DAMAGE_SCALAR = 0.001
 PLAYER_CONTACT_RESISTANCE = 0
 ASTEROID_CONTACT_RESISTANCE = 0.5
+
+LEFT_BORDER_X = 0
+RIGHT_BORDER_X = 80
+BOTTOM_BORDER_Y = 0
+TOP_BORDER_Y = 60
 
 class World():
     def __init__(self):
@@ -68,6 +73,8 @@ class World():
         self._asteroids = self._create_starting_asteroids()
         self._asteroids_to_kill = []
 
+        self._borders = borders.add_borders(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
+
         self.player_current_health = 3
 
     def update(self, player_actions : single_frame_actions.SingleFrameActions):
@@ -95,7 +102,7 @@ class World():
         contact_raw_damage = (normal_impulse ** 2 + tangent_impulse ** 2) * CONTACT_IMPULSE_TO_DAMAGE_SCALAR
         contact_player_damage = max(0, contact_raw_damage - PLAYER_CONTACT_RESISTANCE)
         self.player_current_health = self.player_current_health - contact_player_damage
-        if contact_raw_damage > ASTEROID_CONTACT_RESISTANCE:
+        if contact_raw_damage > ASTEROID_CONTACT_RESISTANCE and impact_asteroid in self._asteroids:
             self._asteroids_to_kill.append(impact_asteroid)
 
     @property
@@ -110,60 +117,56 @@ class World():
         return [self._create_single_asteroid() for x in range(5)]
 
     def _find_border_from_center(self, clockwise_angle_from_right : float) -> Tuple[int, Tuple[float, float]]:
-        left_border_x = 0
-        right_border_x = 80
-        bottom_border_y = 0
-        top_border_y = 60
 
         if clockwise_angle_from_right > pi:
             dydx = tan(clockwise_angle_from_right)
             # line: x = my + c
             # m = dydx
             # c = x - my for x:400, y:300
-            c = (right_border_x / 2) - dydx * (top_border_y / 2)
+            c = (RIGHT_BORDER_X / 2) - dydx * (TOP_BORDER_Y / 2)
 
             # resolve upwards
-            # target: y = top_border_y
-            # x = c + top_border_y * dydx
-            x = c + top_border_y * dydx
-            if x > left_border_x and x < right_border_x:
-                return (Borders.TOP, (x, top_border_y))
-            elif x <= left_border_x:
+            # target: y = TOP_BORDER_Y
+            # x = c + TOP_BORDER_Y * dydx
+            x = c + TOP_BORDER_Y * dydx
+            if x > LEFT_BORDER_X and x < RIGHT_BORDER_X:
+                return (Borders.TOP, (x, TOP_BORDER_Y))
+            elif x <= LEFT_BORDER_X:
                 # 0 = dydx * y + c
                 # -c / dydx = y
                 left_wall_intersect = -c / dydx
-                return (Borders.LEFT, (left_border_x, left_wall_intersect))
+                return (Borders.LEFT, (LEFT_BORDER_X, left_wall_intersect))
             else:
-                # right_border_x = dydx * y + c
-                # (right_border_x - c) / dydx = y
-                right_wall_intersect = (right_border_x - c) / dydx
-                return (Borders.RIGHT, (right_border_x, right_wall_intersect))
+                # RIGHT_BORDER_X = dydx * y + c
+                # (RIGHT_BORDER_X - c) / dydx = y
+                right_wall_intersect = (RIGHT_BORDER_X - c) / dydx
+                return (Borders.RIGHT, (RIGHT_BORDER_X, right_wall_intersect))
         elif clockwise_angle_from_right < pi and clockwise_angle_from_right > 0:
             dydx = tan(clockwise_angle_from_right)
             # line: x = my + c
             # m = dydx
             # c = x - my for x:400, y:300
-            c = (right_border_x / 2) - dydx * (top_border_y / 2)
+            c = (RIGHT_BORDER_X / 2) - dydx * (TOP_BORDER_Y / 2)
 
             # resolve downwards
             # target: y = 0 
             # x = c
-            if c > left_border_x and c < right_border_x:
-                return (Borders.BOTTOM, (c, bottom_border_y))
-            elif c <= left_border_x:
+            if c > LEFT_BORDER_X and c < RIGHT_BORDER_X:
+                return (Borders.BOTTOM, (c, BOTTOM_BORDER_Y))
+            elif c <= LEFT_BORDER_X:
                 # 0 = dydx * y + c
                 # -c / dydx = y
                 left_wall_intersect = -c / dydx
-                return (Borders.LEFT, (left_border_x, left_wall_intersect))
+                return (Borders.LEFT, (LEFT_BORDER_X, left_wall_intersect))
             else:
-                # right_border_x = dydx * y + c
-                # (right_border_x - c) / dydx = y
-                right_wall_intersect = (right_border_x - c) / dydx
-                return (Borders.RIGHT, (right_border_x, right_wall_intersect))
+                # RIGHT_BORDER_X = dydx * y + c
+                # (RIGHT_BORDER_X - c) / dydx = y
+                right_wall_intersect = (RIGHT_BORDER_X - c) / dydx
+                return (Borders.RIGHT, (RIGHT_BORDER_X, right_wall_intersect))
         elif clockwise_angle_from_right is 0:
-            return (Borders.RIGHT, (right_border_x, top_border_y / 2))
+            return (Borders.RIGHT, (RIGHT_BORDER_X, TOP_BORDER_Y / 2))
         else:
-            return (Borders.LEFT, (left_border_x, top_border_y / 2))
+            return (Borders.LEFT, (LEFT_BORDER_X, TOP_BORDER_Y / 2))
 
     def _create_single_asteroid(self):
         direction = random() * 2 * pi
