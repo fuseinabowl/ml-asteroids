@@ -10,7 +10,7 @@ def add_asteroid_play_space(world : Box2D.b2World, left_border : float, right_bo
 
     fixture_def = Box2D.b2FixtureDef()
     fixture_def.shape = fixture_shape
-    fixture_def.is_sensor = True
+    fixture_def.isSensor = True
 
     play_space_body_def = Box2D.b2BodyDef()
     play_space_body_def.fixtures = [fixture_def]
