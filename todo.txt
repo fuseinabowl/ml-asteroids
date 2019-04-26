@@ -27,7 +27,7 @@ asteroids implementation
 + add death
 + player edge of screen collision
 + asteroid edge of screen collision
-- continuous asteroid respawn
++ continuous asteroid respawn
 - add scoring
 
 ML implementation
