@@ -25,6 +25,8 @@ RIGHT_BORDER_X = 80
 BOTTOM_BORDER_Y = 0
 TOP_BORDER_Y = 60
 
+EXTRA_ASTEROIDS_TO_SPAWN_PER_ASTEROID_DEATH = 0.2
+
 class World():
     def __init__(self):
         self._player_maximum_thrust = 2
@@ -77,6 +79,7 @@ class World():
 
         self._asteroids = self._create_starting_asteroids()
         self._asteroids_to_kill = []
+        self._asteroid_extra_spawn_accumulator = 0
 
         self._borders = borders.add_borders(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
         self._asteroid_play_space = asteroid_play_space.add_asteroid_play_space(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
@@ -104,6 +107,11 @@ class World():
             self._physics_world.DestroyBody(dead_asteroid)
             self._asteroids.remove(dead_asteroid)
             self._asteroids.append(self._create_single_asteroid())
+            self._asteroid_extra_spawn_accumulator = self._asteroid_extra_spawn_accumulator + EXTRA_ASTEROIDS_TO_SPAWN_PER_ASTEROID_DEATH
+            if self._asteroid_extra_spawn_accumulator >= 1:
+                self._asteroid_extra_spawn_accumulator = self._asteroid_extra_spawn_accumulator - 1
+                self._asteroids.append(self._create_single_asteroid())
+
         self._asteroids_to_kill.clear()
 
         return UpdateResult.CONTINUE_GAME if self.player_current_health > 0 else UpdateResult.GAME_COMPLETED
