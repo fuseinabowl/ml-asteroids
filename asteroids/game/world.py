@@ -5,7 +5,7 @@ import numpy as np
 
 import Box2D
 
-from . import single_frame_actions, physics_object, player_ship, borders
+from . import single_frame_actions, physics_object, player_ship, borders, asteroid_play_space
 from .collision_filter_categories import CollisionFilterCategory
 from .update_result import UpdateResult
 from .contact_damage_inflicter import ContactDamageInflicter
@@ -79,6 +79,7 @@ class World():
         self._asteroids_to_kill = []
 
         self._borders = borders.add_borders(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
+        self._asteroid_play_space = asteroid_play_space.add_asteroid_play_space(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
 
         self.player_current_health = 3
 
@@ -92,6 +93,12 @@ class World():
         self._player_ship.angularDamping = self._base_rotational_friction + self._thrust_extra_rotational_friction * player_actions.thrust
 
         self._physics_world.Step(1, 6, 2)
+
+        asteroids_in_play_space = asteroid_play_space.report_objects_in_play_space(self._asteroid_play_space)
+
+        for asteroid in self._asteroids:
+            if asteroid not in asteroids_in_play_space and asteroid not in self._asteroids_to_kill:
+                self._asteroids_to_kill.append(asteroid)
 
         for dead_asteroid in self._asteroids_to_kill:
             self._physics_world.DestroyBody(dead_asteroid)
