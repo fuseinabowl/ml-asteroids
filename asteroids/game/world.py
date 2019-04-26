@@ -103,6 +103,7 @@ class World():
         for dead_asteroid in self._asteroids_to_kill:
             self._physics_world.DestroyBody(dead_asteroid)
             self._asteroids.remove(dead_asteroid)
+            self._asteroids.append(self._create_single_asteroid())
         self._asteroids_to_kill.clear()
 
         return UpdateResult.CONTINUE_GAME if self.player_current_health > 0 else UpdateResult.GAME_COMPLETED
