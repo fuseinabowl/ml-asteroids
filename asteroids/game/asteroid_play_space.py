@@ -1,6 +1,6 @@
 import Box2D
 
-PLAYSPACE_PADDING = 5
+PLAYSPACE_PADDING = 0
 
 def add_asteroid_play_space(world : Box2D.b2World, left_border : float, right_border : float, bottom_border : float, top_border : float):
     fixture_shape = Box2D.b2PolygonShape()
