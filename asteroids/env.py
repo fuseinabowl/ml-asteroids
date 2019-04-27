@@ -23,20 +23,19 @@ class Env(gym.Env):
         self.reset()
 
     def step(self, action):
-        # TODO: remove this indirection, apply actions directly
-        self._player.set_this_frame_actions_from_action_space(action)
-        actions = self._player.get_this_frame_actions(None)
+        game_actions = agent_player.convert_gym_actions_to_world_actions(action)
 
-        update_result = self._world.update(actions)
+        update_result = self._world.update(game_actions)
         is_env_done = update_result == UpdateResult.GAME_COMPLETED
-        observation = self._player.gather_player_perceived_world_state(self._world)
+        observation = self._gather_player_perceived_world_state()
         return observation, self._world.player_current_health, is_env_done
 
     def reset(self):
         self._world = world.World()
-        self._player = agent_player.AgentPlayer()
-        self._world.add_player(self._player)
-        return self._player.gather_player_perceived_world_state(self._world)
+        return self._gather_player_perceived_world_state()
+
+    def _gather_player_perceived_world_state(self):
+        return [100] * 20
 
     @property
     def world(self):

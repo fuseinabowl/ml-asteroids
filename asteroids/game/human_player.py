@@ -1,7 +1,7 @@
 import pyglet
 from pyglet.window import key
 
-from . import player, single_frame_actions
+from . import single_frame_actions
 
 player_input_keys = {
     'fire' : key.SPACE,
@@ -10,10 +10,8 @@ player_input_keys = {
     'thrust' : key.W
 }
 
-class HumanPlayer(player.Player):
+class HumanPlayer():
     def __init__(self, pyglet_window, *args, **kwargs):
-        super(HumanPlayer, self).__init__(*args, **kwargs)
-
         self._register_for_events(pyglet_window)
 
         self._left_pressed = 0
@@ -48,7 +46,7 @@ class HumanPlayer(player.Player):
     def _calculate_turn_speed(self):
         return -self._left_pressed + self._right_pressed
 
-    def get_this_frame_actions(self, perceived_world_state):
+    def get_this_frame_actions(self):
         actions = single_frame_actions.SingleFrameActions(
             bullets_firing = self._fire_requests,
             turn_speed = self._calculate_turn_speed(),

@@ -77,7 +77,6 @@ class World():
         ship_body_def.allowSleep = False
 
         self._player_ship = self._physics_world.CreateBody(ship_body_def)
-        self._player_controller = None
 
         self._asteroids = self._create_starting_asteroids()
         self._asteroids_to_kill = []
@@ -119,9 +118,6 @@ class World():
         self._asteroids_to_kill.clear()
 
         return UpdateResult.CONTINUE_GAME if self.player_current_health > 0 else UpdateResult.GAME_COMPLETED
-
-    def add_player(self, player_controller):
-        self._player_controller = player_controller
 
     def player_impact(self, normal_impulse : float, tangent_impulse : float, impact_asteroid : Box2D.b2Body):
         contact_raw_damage = (normal_impulse ** 2 + tangent_impulse ** 2) * CONTACT_IMPULSE_TO_DAMAGE_SCALAR
