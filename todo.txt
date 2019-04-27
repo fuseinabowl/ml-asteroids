@@ -28,7 +28,7 @@ asteroids implementation
 + player edge of screen collision
 + asteroid edge of screen collision
 + continuous asteroid respawn
-- add scoring
++ add scoring
 
 ML implementation
 - abstract asteroids as a gym

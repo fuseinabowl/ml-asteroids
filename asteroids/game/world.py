@@ -82,6 +82,7 @@ class World():
         self._asteroids = self._create_starting_asteroids()
         self._asteroids_to_kill = []
         self._asteroid_extra_spawn_accumulator = 0
+        self._asteroids_avoided_count = 0
 
         self._borders = borders.add_borders(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
         self._asteroid_play_space = asteroid_play_space.add_asteroid_play_space(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
@@ -114,6 +115,7 @@ class World():
                 self._asteroid_extra_spawn_accumulator = self._asteroid_extra_spawn_accumulator - 1
                 self._asteroids.append(self._create_single_asteroid())
 
+        self._asteroids_avoided_count = self._asteroids_avoided_count + len(self._asteroids_to_kill)
         self._asteroids_to_kill.clear()
 
         return UpdateResult.CONTINUE_GAME if self.player_current_health > 0 else UpdateResult.GAME_COMPLETED
