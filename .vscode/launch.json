@@ -12,6 +12,13 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python: Asteroids online learning",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/online_training.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python: Current File (Integrated Terminal)",
             "type": "python",
             "request": "launch",
