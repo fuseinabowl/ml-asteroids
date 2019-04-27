@@ -237,3 +237,25 @@ class World():
         new_asteroid = self._physics_world.CreateBody(asteroid_body_def)
 
         return new_asteroid
+
+    class _ProximityRaycastCallback(Box2D.b2RayCastCallback):
+        def __init__(self, number_of_rays):
+            super().__init__()
+            self.results = [1] * number_of_rays
+            self.current_index = 0
+
+        def ReportFixture(self, fixture, point, normal, fraction):
+            self.results[self.current_index] = fraction
+            return fraction
+
+    def do_proximity_raycasts_from_player(self, number_of_rays, maximum_distance):
+        callback = World._ProximityRaycastCallback(number_of_rays)
+
+        for raycast_index in range(number_of_rays):
+            callback.current_index = raycast_index
+            # work out projected ray
+            projected_ray_from_origin = Box2D.b2Vec2(1,0)
+            projected_ray_from_player = self._player_ship.position + projected_ray_from_origin
+            self._physics_world.RayCast(callback, self._player_ship.position, projected_ray_from_player)
+
+        return callback.results

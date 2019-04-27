@@ -4,6 +4,9 @@ from gym.spaces import Tuple, Discrete, Box
 from .game import world, agent_player
 from .game.update_result import UpdateResult
 
+OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE = 100
+OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS = 20
+
 class Env(gym.Env):
     action_space = None
     observation_space = None
@@ -18,7 +21,7 @@ class Env(gym.Env):
         # proximity sensor, 0 is touching 100 is far.
         # Index 0 is at the ship's nose, further indices move
         # clockwise around (index n-1 will be one counter clockwise from ship's nose)
-        self.observation_space = Box(0, 100, shape=(20, 1))
+        self.observation_space = Box(0, OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE, shape=(OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS, 1))
 
         self.reset()
 
@@ -35,7 +38,7 @@ class Env(gym.Env):
         return self._gather_player_perceived_world_state()
 
     def _gather_player_perceived_world_state(self):
-        return [100] * 20
+        return self._world.do_proximity_raycasts_from_player(OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS, OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE)
 
     @property
     def world(self):
