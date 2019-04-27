@@ -251,11 +251,16 @@ class World():
     def do_proximity_raycasts_from_player(self, number_of_rays, maximum_distance):
         callback = World._ProximityRaycastCallback(number_of_rays)
 
+        starting_angle = self._player_ship.angle
+        angle_step = 2 * pi / number_of_rays
+
         for raycast_index in range(number_of_rays):
             callback.current_index = raycast_index
             # work out projected ray
-            projected_ray_from_origin = Box2D.b2Vec2(1,0)
+            current_angle = starting_angle + angle_step * raycast_index
+            angle_forward_vector = Box2D.b2Vec2(-sin(current_angle), cos(current_angle))
+            projected_ray_from_origin = angle_forward_vector * maximum_distance
             projected_ray_from_player = self._player_ship.position + projected_ray_from_origin
             self._physics_world.RayCast(callback, self._player_ship.position, projected_ray_from_player)
 
-        return callback.results
+        return [ray_fraction * maximum_distance for ray_fraction in callback.results]
