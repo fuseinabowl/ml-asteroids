@@ -27,6 +27,8 @@ TOP_BORDER_Y = 60
 
 EXTRA_ASTEROIDS_TO_SPAWN_PER_ASTEROID_DEATH = 0.2
 
+ASTEROID_SPAWN_SPEED = 0.2
+
 class World():
     def __init__(self):
         self._player_maximum_thrust = 2
@@ -207,12 +209,11 @@ class World():
         asteroid_spawn_location = tuple(collision_coordinate + offset_coordinate for collision_coordinate, offset_coordinate in zip(collision_point, border_offset))
 
         # make asteroids fly in
-        asteroid_speed = 0.05
         def create_velocity_generator(start_angle, end_angle):
             angle_range = end_angle - start_angle
             def generate_velocity():
                 chosen_angle = start_angle + random() * angle_range
-                return (cos(chosen_angle) * asteroid_speed, -sin(chosen_angle) * asteroid_speed)
+                return (cos(chosen_angle) * ASTEROID_SPAWN_SPEED, -sin(chosen_angle) * ASTEROID_SPAWN_SPEED)
             return generate_velocity
         border_velocity_generators = {
             Borders.LEFT: create_velocity_generator    (-1 * pi / 4, 1 * pi / 4),
