@@ -14,7 +14,7 @@ class OnlineTraining():
 
         self.batch_size = 256
 
-        self.games_remaining = 1000
+        self.games_remaining = 100000
         
         def update_game():
             player_actions_as_single_value = self.agent.act(self.last_seen_observation)
