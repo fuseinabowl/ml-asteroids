@@ -34,7 +34,7 @@ class DQNAgent:
     def act(self, state):
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
-        act_values = self.model.predict(state.reshape([1,1,20]))
+        act_values = self.model.predict(state.reshape([1,1,self.state_size]))
         return np.argmax(act_values[0])  # returns action
         
     def replay(self, batch_size):

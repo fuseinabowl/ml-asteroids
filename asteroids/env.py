@@ -1,6 +1,7 @@
 import gym
-
+import numpy as np
 from gym.spaces import Tuple, Discrete, Box
+
 from .game import world, agent_player
 from .game.update_result import UpdateResult
 
@@ -21,7 +22,15 @@ class Env(gym.Env):
         # proximity sensor, 0 is touching 100 is far.
         # Index 0 is at the ship's nose, further indices move
         # clockwise around (index n-1 will be one counter clockwise from ship's nose)
-        self.observation_space = Box(0, OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE, shape=(OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS,))
+        obs_space_low = np.zeros(shape = OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS + 1)
+        obs_space_high = np.append(
+            (np.ones(shape = OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS) * OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE),
+            (np.ones(shape = 1))
+        )
+        self.observation_space = Box(
+            low = obs_space_low,
+            high = obs_space_high
+        )
 
         self.reset()
 
@@ -33,14 +42,18 @@ class Env(gym.Env):
         update_result = self._world.update(game_actions)
         is_env_done = update_result == UpdateResult.GAME_COMPLETED
         observation = self._gather_player_perceived_world_state()
-        return observation, self._world.player_current_health, is_env_done, None
+        score = self._world.player_current_health if not is_env_done else -100
+        return observation, score, is_env_done, None
 
     def reset(self):
         self._world = world.World()
         return self._gather_player_perceived_world_state()
 
     def _gather_player_perceived_world_state(self):
-        return self._world.do_proximity_raycasts_from_player(OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS, OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE)
+        proximity_observation = self._world.do_proximity_raycasts_from_player(OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS, OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE)
+        current_health = self._world.player_current_health
+        health_observation = np.array([[np.clip(current_health,0,1)]])
+        return np.append(proximity_observation, health_observation, axis=1)
 
     @property
     def world(self):

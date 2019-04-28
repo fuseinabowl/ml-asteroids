@@ -10,7 +10,7 @@ class OnlineTraining():
     def main(self):
         self.env = environment.Env()
         self.last_seen_observation = self.env.reset()
-        self.agent = dqn_agent.DQNAgent(20, 6)
+        self.agent = dqn_agent.DQNAgent(self.env.observation_space.shape[0], self.env.action_space.spaces[0].n)
 
         self.batch_size = 256
 
