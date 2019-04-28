@@ -14,19 +14,21 @@ class Env(gym.Env):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.action_space = Tuple(
-            [Discrete(3) # turn left, don't turn, turn right
-            ,Discrete(2) # don't thrust, thrust
+            [Discrete(6) # turn left, don't turn, turn right
+            #,Discrete(2) # don't thrust, thrust
             ]
         )
         # proximity sensor, 0 is touching 100 is far.
         # Index 0 is at the ship's nose, further indices move
         # clockwise around (index n-1 will be one counter clockwise from ship's nose)
-        self.observation_space = Box(0, OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE, shape=(OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS, 1))
+        self.observation_space = Box(0, OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE, shape=(OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS,))
 
         self.reset()
 
     def step(self, action):
-        game_actions = agent_player.convert_gym_actions_to_world_actions(action)
+        turn_input = action % 3
+        thrust_input = action // 3
+        game_actions = agent_player.convert_gym_actions_to_world_actions((turn_input, thrust_input))
 
         update_result = self._world.update(game_actions)
         is_env_done = update_result == UpdateResult.GAME_COMPLETED

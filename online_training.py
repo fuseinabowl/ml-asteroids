@@ -12,17 +12,19 @@ class OnlineTraining():
         self.last_seen_observation = self.env.reset()
         self.agent = dqn_agent.DQNAgent(20, 6)
 
-        self.games_remaining = 10
+        self.batch_size = 32
+
+        self.games_remaining = 1000
         
         def update_game():
             player_actions_as_single_value = self.agent.act(self.last_seen_observation)
-            turn_input = player_actions_as_single_value % 3
-            thrust_input = player_actions_as_single_value // 3
-            next_observation, reward, is_done, _ = self.env.step((turn_input, thrust_input))
+            next_observation, reward, is_done, _ = self.env.step(player_actions_as_single_value)
             self.agent.remember(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done)
             self.last_seen_observation = next_observation
 
             if is_done:
+                if len(self.agent.memory) > self.batch_size:
+                    self.agent.replay(self.batch_size)
                 self.last_seen_observation = self.env.reset()
                 self.games_remaining = self.games_remaining - 1
                 if self.games_remaining <= 0:

@@ -86,7 +86,7 @@ class World():
         self._borders = borders.add_borders(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
         self._asteroid_play_space = asteroid_play_space.add_asteroid_play_space(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
 
-        self.player_current_health = 3
+        self.player_current_health = 1
 
     def update(self, player_actions : single_frame_actions.SingleFrameActions):
         self._player_ship.ApplyAngularImpulse(-player_actions.turn_speed * (self._player_maximum_turn_thrust + self._thrust_extra_turn_thrust * player_actions.thrust), True)
@@ -263,4 +263,4 @@ class World():
             projected_ray_from_player = self._player_ship.position + projected_ray_from_origin
             self._physics_world.RayCast(callback, self._player_ship.position, projected_ray_from_player)
 
-        return [ray_fraction * maximum_distance for ray_fraction in callback.results]
+        return np.asarray([ray_fraction * maximum_distance for ray_fraction in callback.results]).reshape(1,number_of_rays)
