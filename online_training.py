@@ -12,7 +12,7 @@ class OnlineTraining():
         self.last_seen_observation = self.env.reset()
         self.agent = dqn_agent.DQNAgent(20, 6)
 
-        self.batch_size = 32
+        self.batch_size = 256
 
         self.games_remaining = 1000
         
