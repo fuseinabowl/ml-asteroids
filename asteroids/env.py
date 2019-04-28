@@ -31,7 +31,7 @@ class Env(gym.Env):
         update_result = self._world.update(game_actions)
         is_env_done = update_result == UpdateResult.GAME_COMPLETED
         observation = self._gather_player_perceived_world_state()
-        return observation, self._world.player_current_health, is_env_done
+        return observation, self._world.player_current_health, is_env_done, None
 
     def reset(self):
         self._world = world.World()
