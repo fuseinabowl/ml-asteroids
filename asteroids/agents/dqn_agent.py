@@ -3,7 +3,7 @@ from collections import deque
 import numpy as np
 from collections import deque
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import LSTM, Embedding, Activation
 from tensorflow.keras.optimizers import Adam
 
 class DQNAgent:
@@ -21,9 +21,9 @@ class DQNAgent:
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(24, input_dim=self.state_size, activation='relu'))
-        model.add(Dense(24, activation='relu'))
-        model.add(Dense(self.action_size, activation='linear'))
+        model.add(LSTM(256, input_shape=[1, self.state_size], return_sequences=True))
+        model.add(LSTM(256, return_sequences=True))
+        model.add(LSTM(self.action_size, activation='linear'))
         model.compile(loss='mse',
                       optimizer=Adam(lr=self.learning_rate))
         return model
@@ -34,18 +34,21 @@ class DQNAgent:
     def act(self, state):
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
-        act_values = self.model.predict(state)
+        act_values = self.model.predict(state.reshape([1,1,20]))
         return np.argmax(act_values[0])  # returns action
         
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
         for state, action, reward, next_state, done in minibatch:
+            reshaped_state = state.reshape([1,1,self.state_size])
+            reshaped_next_state = next_state.reshape([1,1,self.state_size])
+
             target = reward
             if not done:
               target = reward + self.gamma * \
-                       np.amax(self.model.predict(next_state)[0])
-            target_f = self.model.predict(state)
+                       np.amax(self.model.predict(reshaped_next_state)[0])
+            target_f = self.model.predict(reshaped_state)
             target_f[0][action] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0)
+            self.model.fit(reshaped_state, target_f, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
