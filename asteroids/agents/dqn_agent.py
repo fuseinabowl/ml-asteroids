@@ -3,7 +3,7 @@ from collections import deque
 import numpy as np
 from collections import deque
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Embedding, Activation
+from tensorflow.keras.layers import LSTM
 from tensorflow.keras.optimizers import Adam
 
 class DQNAgent:
