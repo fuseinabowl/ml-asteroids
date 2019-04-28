@@ -33,7 +33,7 @@ asteroids implementation
 ML implementation
 + abstract asteroids as a gym
 + implement observation space
-- implement a 2 layer NN agent and begin online training
++ implement a 2 layer NN agent and begin online training
 - save models from the online training
 - implement online model loading and run the trained models in evaluation mode
 - implement offline training and save models
