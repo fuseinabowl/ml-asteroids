@@ -6,7 +6,7 @@ from .game import world, agent_player
 from .game.update_result import UpdateResult
 
 OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE = 100
-OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS = 20
+OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS = 64
 
 class Env(gym.Env):
     action_space = None

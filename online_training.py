@@ -19,13 +19,12 @@ class OnlineTraining():
         def update_game():
             player_actions_as_single_value = self.agent.act(self.last_seen_observation)
             next_observation, reward, is_done, _ = self.env.step(player_actions_as_single_value)
-            self.agent.remember(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done)
+            self.agent.train_one_frame(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done)
             self.last_seen_observation = next_observation
 
             if is_done:
-                if len(self.agent.memory) > self.batch_size:
-                    self.agent.replay(self.batch_size)
                 self.last_seen_observation = self.env.reset()
+                self.agent.on_end_episode()
                 self.games_remaining = self.games_remaining - 1
                 if self.games_remaining <= 0:
                     return update_result.UpdateResult.GAME_COMPLETED
