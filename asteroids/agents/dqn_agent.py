@@ -9,10 +9,10 @@ class DQNAgent:
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = 0.95    # discount rate
-        self.epsilon = 1.0  # exploration rate
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
         self.learning_rate = 0.001
+        self.action_probability_sharpening = 0
+        self.action_probability_sharpening_increase = 0.05
+        self.action_probability_sharpening_max = 5
         self.model = self._build_model()
 
     def _build_model(self):
@@ -26,25 +26,36 @@ class DQNAgent:
         return model
         
     def act(self, state):
-        if np.random.rand() <= self.epsilon:
-            return random.randrange(self.action_size)
-        act_values = self.model.predict(state.reshape([1,1,self.state_size]))
-        return np.argmax(act_values[0])  # returns action
+        act_values = np.nan_to_num(self.model.predict(state.reshape([1,1,self.state_size])))
+
+        assert(not np.isnan(np.sum(act_values)))
+
+        act_values_sharpened = np.power(self.action_probability_sharpening * np.ones_like(act_values[0][0]), act_values[0][0])
+        act_values_probabilities = act_values_sharpened / np.sum(act_values_sharpened)
+        
+        action_selector_value = random.random()
+        for action_index, action_probability in enumerate(act_values_probabilities):
+            action_selector_value = action_selector_value - action_probability
+            if action_selector_value <= 0:
+                break
+            
+        return action_index
         
     def train_one_frame(self, state, action, reward, next_state, done):
         reshaped_state = state.reshape([1,1,self.state_size])
         reshaped_next_state = next_state.reshape([1,1,self.state_size])
 
         target = reward
+        assert(not np.isnan(target))
         if not done:
-            target = reward + self.gamma * \
-                    np.amax(self.model.predict(reshaped_next_state)[0])
+            target = reward +  \
+                    self.gamma * np.amax(np.nan_to_num(self.model.predict(reshaped_next_state)[0]))
+            assert(not np.isnan(target))
         target_f = self.model.predict(reshaped_state)
-        target_f[0][action] = target
+        target_f[0][0][action] = target
         self.model.fit(reshaped_state, target_f, epochs=1, verbose=0)
         
     def on_end_episode(self):
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
+        self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
 
         self.model.reset_states()
