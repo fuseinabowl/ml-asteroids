@@ -19,6 +19,7 @@ ASTEROID_RADIUS = 5
 CONTACT_IMPULSE_TO_DAMAGE_SCALAR = 0.001
 PLAYER_CONTACT_RESISTANCE = 0
 ASTEROID_CONTACT_RESISTANCE = 0.5
+MAX_PLAYER_HEALTH = 1
 
 LEFT_BORDER_X = 0
 RIGHT_BORDER_X = 80
@@ -86,7 +87,7 @@ class World():
         self._borders = borders.add_borders(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
         self._asteroid_play_space = asteroid_play_space.add_asteroid_play_space(self._physics_world, LEFT_BORDER_X, RIGHT_BORDER_X, BOTTOM_BORDER_Y, TOP_BORDER_Y)
 
-        self.player_current_health = 1
+        self.player_current_health = MAX_PLAYER_HEALTH
 
     def update(self, player_actions : single_frame_actions.SingleFrameActions):
         self._player_ship.ApplyAngularImpulse(-player_actions.turn_speed * (self._player_maximum_turn_thrust + self._thrust_extra_turn_thrust * player_actions.thrust), True)

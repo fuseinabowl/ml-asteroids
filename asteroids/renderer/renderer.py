@@ -4,7 +4,7 @@ import math
 from typing import Callable, Tuple
 import Box2D
 
-from ..game.world import World
+from ..game.world import World, MAX_PLAYER_HEALTH
 from ..game.update_result import UpdateResult
 from . import background, resources
 
@@ -98,11 +98,13 @@ class Renderer():
     def _apply_damage_state_decals(self, current_health):
         sprite_index_to_enable = None
 
-        if current_health <= 0:
+        health_proportion = current_health / MAX_PLAYER_HEALTH
+
+        if health_proportion <= 1/4:
             sprite_index_to_enable = 2
-        elif current_health < 1:
+        elif health_proportion < 2/4:
             sprite_index_to_enable = 1
-        elif current_health < 2:
+        elif health_proportion < 3/4:
             sprite_index_to_enable = 0
 
         for sprite_index, sprite in enumerate(self._player_damage_sprites):

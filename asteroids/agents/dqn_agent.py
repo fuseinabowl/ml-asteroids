@@ -1,7 +1,7 @@
 import random
 import numpy as np
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM
+from tensorflow.keras.layers import LSTM, LeakyReLU, Dense
 from tensorflow.keras.optimizers import Adam
 
 class DQNAgent:
@@ -18,9 +18,19 @@ class DQNAgent:
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(LSTM(64, batch_input_shape=[1,1,self.state_size], return_sequences=True, stateful=True))
-        model.add(LSTM(64, return_sequences=True, stateful=True))
-        model.add(LSTM(self.action_size, activation='linear', stateful=True))
+        model.add(Dense(16, batch_input_shape=[1,1,self.state_size], activation='linear'))
+        model.add(LeakyReLU(alpha=0.3))
+        model.add(Dense(16, activation='linear'))
+        model.add(LeakyReLU(alpha=0.3))
+        model.add(Dense(self.action_size, activation='tanh'))
+        #model.add(LeakyReLU(alpha=0.3))
+
+        #model.add(LSTM(64, batch_input_shape=[1,1,self.state_size], return_sequences=True, stateful=True, activation='tanh'))
+        #model.add(LeakyReLU(alpha=0.3))
+        #model.add(LSTM(64, return_sequences=True, stateful=True, activation='tanh'))
+        #model.add(LeakyReLU(alpha=0.3))
+        #model.add(LSTM(self.action_size, activation='linear', stateful=True))
+        #model.add(LeakyReLU(alpha=0.3))
         model.compile(loss='mse',
                       optimizer=Adam(lr=self.learning_rate))
         return model
