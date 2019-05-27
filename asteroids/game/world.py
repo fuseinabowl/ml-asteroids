@@ -67,7 +67,10 @@ class World():
         self._thrust_extra_rotational_friction = 0.05
 
         ship_body_def = Box2D.b2BodyDef()
-        ship_body_def.position = (5, 5)
+        ship_body_def.position = (
+            5 + random() * (RIGHT_BORDER_X - 10),
+            5 + random() * (TOP_BORDER_Y - 10)
+        )
         ship_body_def.angle = random() * pi * 2
         ship_body_def.linearVelocity = (0,0)
         ship_body_def.linearDamping = self._player_base_friction
