@@ -39,7 +39,7 @@ class OfflineTraining():
         def update_game():
             player_actions_as_single_value = self.agent.act(self.last_seen_observation)
             next_observation, reward, is_done, _ = self.env.step(player_actions_as_single_value)
-            self.replays.append(ReplayFrame(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done)
+            self.replays.append(ReplayFrame(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done))
             self.last_seen_observation = next_observation
 
             if is_done:
