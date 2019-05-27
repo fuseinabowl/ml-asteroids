@@ -38,7 +38,7 @@ class OfflineTraining():
         self.games_remaining = 100000
 
         self.steps_completed = 0
-        self.training_period = self.batch_size
+        self.training_period = 256
         
         def update_game():
             player_actions_as_single_value = self.agent.act(self.last_seen_observation)
@@ -73,7 +73,7 @@ class OfflineTraining():
         renderer_instance.run()
 
     def generate_mini_batch(self):
-        return sample(self.replays, self.batch_size)
+        return sample(self.replays, min(len(self.replays), self.batch_size))
 
 
 if __name__ == '__main__':
