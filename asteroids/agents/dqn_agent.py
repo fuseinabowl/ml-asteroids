@@ -39,9 +39,10 @@ class DQNAgent:
     def act(self, state):
         act_values = np.nan_to_num(self.model.predict(state.reshape([1,1,self.state_size])))
 
-        assert(not np.isnan(np.sum(act_values)))
+        assert(not np.any(np.isnan(act_values)))
+        act_values = np.clip(act_values, 0, 100)
 
-        act_values_sharpened = np.power(self.action_probability_sharpening * np.ones_like(act_values[0][0]), act_values[0][0])
+        act_values_sharpened = np.nan_to_num(np.power(act_values[0][0], self.action_probability_sharpening * np.ones_like(act_values[0][0])))
         act_values_probabilities = act_values_sharpened / np.sum(act_values_sharpened)
         
         action_selector_value = random.random()
