@@ -12,6 +12,13 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python: Asteroids offline learning",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/offline_training.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python: Asteroids online learning",
             "type": "python",
             "request": "launch",
