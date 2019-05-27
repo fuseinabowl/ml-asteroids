@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
-from tensorflow.nn import leaky_relu
+from tensorflow.nn import leaky_relu, softmax_cross_entropy_with_logits_v2
 
 from tensorflow.keras.callbacks import TensorBoard
 import time
@@ -39,7 +39,7 @@ class DQNAgent:
         model.add(Dropout(rate=0.3))
         model.add(Dense(self.action_size, activation=leaky_relu))
 
-        model.compile(loss='mse',
+        model.compile(loss=softmax_cross_entropy_with_logits_v2,
                       optimizer=Adam(lr=self.learning_rate))
         return model
         
