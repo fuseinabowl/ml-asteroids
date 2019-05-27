@@ -38,7 +38,7 @@ class OfflineTraining():
         self.games_remaining = 100000
 
         self.steps_completed = 0
-        self.training_period = 256
+        self.training_period = 2048
         
         def update_game():
             player_actions_as_single_value = self.agent.act(self.last_seen_observation)
