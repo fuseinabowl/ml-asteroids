@@ -4,6 +4,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.nn import elu
+from tensorflow.keras import backend as keras_backend
 
 from tensorflow.keras.callbacks import TensorBoard
 import time
@@ -23,6 +24,8 @@ class DQNAgent:
         self.tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
         self.epoch_counter = 0
         self.model = self._build_model()
+
+        keras_backend.set_learning_phase(0)
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
@@ -57,6 +60,7 @@ class DQNAgent:
         return action_index
         
     def train_from_mini_batch(self, states, actions, rewards, next_states, is_terminals):
+        keras_backend.set_learning_phase(1)
         targets = np.zeros_like(rewards)
         
         next_state_predicted_rewards = np.amax(np.nan_to_num(self.model.predict([next_states])), axis=2)
@@ -77,6 +81,7 @@ class DQNAgent:
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
+        keras_backend.set_learning_phase(0)
 
     def on_end_episode(self):
         self.model.reset_states()
