@@ -1,7 +1,7 @@
 import pyglet
 
 from collections import deque
-from random import sample
+from random import shuffle
 
 from asteroids import env as environment
 from asteroids.renderer import renderer
@@ -73,7 +73,9 @@ class OfflineTraining():
         renderer_instance.run()
 
     def generate_mini_batch(self):
-        return sample(self.replays, min(len(self.replays), self.batch_size))
+        replays_clone = list(self.replays)
+        shuffle(replays_clone)
+        return replays_clone
 
 
 if __name__ == '__main__':
