@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
-from tensorflow.nn import leaky_relu, softmax_cross_entropy_with_logits_v2
+from tensorflow.nn import elu
 
 from tensorflow.keras.callbacks import TensorBoard
 import time
@@ -43,10 +43,10 @@ class DQNAgent:
         act_values = np.nan_to_num(self.model.predict(state.reshape([1,1,self.state_size])))
 
         assert(not np.any(np.isnan(act_values)))
-        act_values = np.clip(act_values, 0, 100)
 
-        act_values_sharpened = np.nan_to_num(np.power(act_values[0][0], self.action_probability_sharpening * np.ones_like(act_values[0][0])))
-        act_values_probabilities = act_values_sharpened / np.sum(act_values_sharpened)
+        act_values_sharpened = np.nan_to_num(np.power(self.action_probability_sharpening * np.ones_like(act_values[0][0]), act_values[0][0]))
+        sharpened_total = np.sum(act_values_sharpened)
+        act_values_probabilities = act_values_sharpened / sharpened_total if sharpened_total > 0 else [1 / sharpened_total] * self.action_size
         
         action_selector_value = random.random()
         for action_index, action_probability in enumerate(act_values_probabilities):
