@@ -1,6 +1,7 @@
 import pyglet
 
 from collections import deque
+from random import sample
 
 from asteroids import env as environment
 from asteroids.renderer import renderer
@@ -35,12 +36,25 @@ class OfflineTraining():
         self.batch_size = 256
 
         self.games_remaining = 100000
+
+        self.steps_completed = 0
+        self.training_period = 256
         
         def update_game():
             player_actions_as_single_value = self.agent.act(self.last_seen_observation)
             next_observation, reward, is_done, _ = self.env.step(player_actions_as_single_value)
             self.replays.append(ReplayFrame(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done))
             self.last_seen_observation = next_observation
+
+            self.steps_completed = self.steps_completed + 1
+            if self.steps_completed % self.training_period == 0:
+                mini_batch = self.generate_mini_batch()
+                observations = [frame.observation for frame in mini_batch]
+                actions = [frame.action for frame in mini_batch]
+                rewards = [frame.reward for frame in mini_batch]
+                next_observations = [frame.next_observation for frame in mini_batch]
+                is_dones = [frame.is_done for frame in mini_batch]
+                self.agent.train_from_mini_batch(observations, actions, rewards, next_observations, is_dones)
 
             if is_done:
                 self.last_seen_observation = self.env.reset()
@@ -57,6 +71,9 @@ class OfflineTraining():
         renderer_instance = renderer.Renderer(update_game, get_world)
         
         renderer_instance.run()
+
+    def generate_mini_batch(self):
+        return sample(self.replays, self.batch_size)
 
 
 if __name__ == '__main__':

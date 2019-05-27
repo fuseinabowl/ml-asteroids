@@ -67,22 +67,21 @@ class DQNAgent:
         self.model.fit(reshaped_state, target_f, epochs=1, verbose=0)
 
     def train_from_mini_batch(self, states, actions, rewards, next_states, is_terminals):
-        targets = np.array_like(rewards)
-        assert(not np.isnan(targets))
+        targets = np.zeros_like(rewards)
         
-        for index, (reward, is_terminal) in enumerate(zip(rewards, is_terminals)):
+        for index, (reward, is_terminal, next_state) in enumerate(zip(rewards, is_terminals, next_states)):
             if not is_terminal:
                 targets[index] = reward +  \
-                        self.gamma * np.amax(np.nan_to_num(self.model.predict(next_states)[0]))
-                assert(not np.isnan(targets))
+                        self.gamma * np.amax(np.nan_to_num(self.model.predict([next_state.reshape((1,1,-1))])[0]))
+                assert(not np.any(np.isnan(targets)))
             else:
                 targets[index] = reward
                 
-        targets_f = self.model.predict(states)
+        targets_f = self.model.predict([states])
         for index in range(len(targets_f)):
             targets_f[index][0][actions] = targets[index]
             
-        self.model.fit(states, targets_f, epochs=1, verbose=0)
+        self.model.fit([states], targets_f, epochs=1, verbose=0)
         
     def on_end_episode(self):
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
