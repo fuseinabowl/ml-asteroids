@@ -58,11 +58,11 @@ class DQNAgent:
         reshaped_next_state = next_state.reshape([1,1,self.state_size])
 
         target = reward
-        assert(not np.isnan(target))
+        assert(not np.any(np.isnan(target)))
         if not done:
             target = reward +  \
                     self.gamma * np.amax(np.nan_to_num(self.model.predict(reshaped_next_state)[0]))
-            assert(not np.isnan(target))
+            assert(not np.any(np.isnan(target)))
         target_f = self.model.predict(reshaped_state)
         target_f[0][0][action] = target
         self.model.fit(reshaped_state, target_f, epochs=1, verbose=0)
