@@ -77,7 +77,7 @@ class DQNAgent:
         for index, action in enumerate(actions):
             targets_f[index][0][action] = targets[index]
             
-        self.model.fit([states], targets_f, batch_size = 256, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard])
+        self.model.fit([states], targets_f, validation_split=0.25, batch_size = 256, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard])
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
