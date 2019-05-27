@@ -62,7 +62,7 @@ class Env(gym.Env):
             return 0
         else:
             score = BASE_STAY_ALIVE_SCORE
-            score = score + health / world.MAX_PLAYER_HEALTH
+            score = score + (health / world.MAX_PLAYER_HEALTH) / (1 - BASE_STAY_ALIVE_SCORE)
             return score
 
     @property
