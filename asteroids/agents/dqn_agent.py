@@ -80,21 +80,24 @@ class DQNAgent:
     def train_from_mini_batch(self, states, actions, rewards, next_states, is_terminals):
         targets = np.zeros_like(rewards)
         
-        for index, (reward, is_terminal, next_state) in enumerate(zip(rewards, is_terminals, next_states)):
+        next_state_predicted_rewards = np.amax(np.nan_to_num(self.model.predict([next_states])), axis=2)
+        next_state_predicted_rewards = next_state_predicted_rewards.reshape((-1,))
+        
+        for index, (reward, is_terminal, predicted_next_reward) in enumerate(zip(rewards, is_terminals, next_state_predicted_rewards)):
             if not is_terminal:
-                targets[index] = reward +  \
-                        self.gamma * np.amax(np.nan_to_num(self.model.predict([next_state.reshape((1,1,-1))])[0]))
+                targets[index] = reward + self.gamma * predicted_next_reward
                 assert(not np.any(np.isnan(targets)))
             else:
                 targets[index] = reward
                 
         targets_f = self.model.predict([states])
-        for index in range(len(targets_f)):
-            targets_f[index][0][actions] = targets[index]
+        for index, action in enumerate(actions):
+            targets_f[index][0][action] = targets[index]
             
         self.model.fit([states], targets_f, batch_size = 256, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard])
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
 
+    def on_end_episode(self):
         self.model.reset_states()
