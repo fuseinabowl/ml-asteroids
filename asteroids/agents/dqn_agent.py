@@ -5,6 +5,12 @@ from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.nn import leaky_relu
 
+from tensorflow.keras.callbacks import TensorBoard
+import time
+
+NAME = 'asteroids-pilot-{}'.format(int(time.time()))
+EPOCHS_PER_TRAIN_STEP = 5
+
 class DQNAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
@@ -14,6 +20,8 @@ class DQNAgent:
         self.action_probability_sharpening = 0
         self.action_probability_sharpening_increase = 0.05
         self.action_probability_sharpening_max = 5
+        self.tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
+        self.epoch_counter = 0
         self.model = self._build_model()
 
     def _build_model(self):
@@ -84,9 +92,9 @@ class DQNAgent:
         for index in range(len(targets_f)):
             targets_f[index][0][actions] = targets[index]
             
-        self.model.fit([states], targets_f, epochs=1, verbose=0)
+        self.model.fit([states], targets_f, batch_size = 256, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard])
+        self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
-    def on_end_episode(self):
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
 
         self.model.reset_states()
