@@ -41,7 +41,7 @@ class Renderer():
         self._player_damage_sprites = load_player_damage_sprites(self._player_batch, self._player_sprite)
         self._asteroid_sprites = []
         
-        game_framerate = 1/120
+        game_framerate = 2/144
 
         self.unconsumed_time = 0
         def update(dt):
