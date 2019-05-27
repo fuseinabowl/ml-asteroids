@@ -75,7 +75,7 @@ class DQNAgent:
             assert(not np.any(np.isnan(target)))
         target_f = self.model.predict(reshaped_state)
         target_f[0][0][action] = target
-        self.model.fit(reshaped_state, target_f, epochs=1, verbose=0)
+        self.model.fit(reshaped_state, target_f, batch_size = 256, epochs=5, verbose=2, callbacks=[self.tensorboard])
 
     def train_from_mini_batch(self, states, actions, rewards, next_states, is_terminals):
         targets = np.zeros_like(rewards)
