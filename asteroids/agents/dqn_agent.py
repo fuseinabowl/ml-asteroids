@@ -39,7 +39,7 @@ class DQNAgent:
         model.add(Dropout(rate=0.3))
         model.add(Dense(self.action_size, activation=leaky_relu))
 
-        model.compile(loss=softmax_cross_entropy_with_logits_v2,
+        model.compile(loss='mse',
                       optimizer=Adam(lr=self.learning_rate))
         return model
         
