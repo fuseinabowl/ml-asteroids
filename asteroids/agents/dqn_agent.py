@@ -19,7 +19,7 @@ class DQNAgent:
         self.gamma = 0.95    # discount rate
         self.learning_rate = 0.001
         self.action_probability_sharpening = 1
-        self.action_probability_sharpening_increase = 0.05
+        self.action_probability_sharpening_increase = 0.005
         self.action_probability_sharpening_max = 5
         self.tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
         self.epoch_counter = 0
