@@ -33,6 +33,10 @@ class DQNAgent:
         model.add(Dropout(rate=0.3))
         model.add(Dense(128, activation=leaky_relu))
         model.add(Dropout(rate=0.3))
+        model.add(Dense(128, activation=leaky_relu))
+        model.add(Dropout(rate=0.3))
+        model.add(Dense(128, activation=leaky_relu))
+        model.add(Dropout(rate=0.3))
         model.add(Dense(self.action_size, activation=leaky_relu))
 
         model.compile(loss='mse',
