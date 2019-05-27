@@ -8,6 +8,8 @@ from .game.update_result import UpdateResult
 OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE = 100
 OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS = 64
 
+BASE_STAY_ALIVE_SCORE = 0.5
+
 class Env(gym.Env):
     action_space = None
     observation_space = None
@@ -42,7 +44,7 @@ class Env(gym.Env):
         update_result = self._world.update(game_actions)
         is_env_done = update_result == UpdateResult.GAME_COMPLETED
         observation = self._gather_player_perceived_world_state()
-        score = self._world.player_current_health if not is_env_done else -100
+        score = self.get_score(health = self._world.player_current_health, is_done = is_env_done)
         return observation, score, is_env_done, None
 
     def reset(self):
@@ -54,6 +56,14 @@ class Env(gym.Env):
         current_health = self._world.player_current_health
         health_observation = np.array([[np.clip(current_health,0,1)]])
         return np.append(proximity_observation, health_observation, axis=1)
+
+    def get_score(self, health, is_done):
+        if is_done:
+            return 0
+        else:
+            score = BASE_STAY_ALIVE_SCORE
+            score = score + health / world.MAX_PLAYER_HEALTH
+            return score
 
     @property
     def world(self):
