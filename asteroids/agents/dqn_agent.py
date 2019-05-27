@@ -1,8 +1,9 @@
 import random
 import numpy as np
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, LeakyReLU, Dense
+from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
+from tensorflow.nn import leaky_relu
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -18,10 +19,10 @@ class DQNAgent:
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(16, batch_input_shape=[1,1,self.state_size], activation='linear'))
-        model.add(LeakyReLU(alpha=0.3))
-        model.add(Dense(16, activation='linear'))
-        model.add(LeakyReLU(alpha=0.3))
+        model.add(Dense(16, input_shape=[1,self.state_size], activation=leaky_relu))
+        model.add(Dropout(rate=0.3))
+        model.add(Dense(16, activation=leaky_relu))
+        model.add(Dropout(rate=0.3))
         model.add(Dense(self.action_size, activation='tanh'))
         #model.add(LeakyReLU(alpha=0.3))
 
@@ -64,6 +65,24 @@ class DQNAgent:
         target_f = self.model.predict(reshaped_state)
         target_f[0][0][action] = target
         self.model.fit(reshaped_state, target_f, epochs=1, verbose=0)
+
+    def train_from_mini_batch(self, states, actions, rewards, next_states, is_terminals):
+        targets = np.array_like(rewards)
+        assert(not np.isnan(targets))
+        
+        for index, (reward, is_terminal) in enumerate(zip(rewards, is_terminals)):
+            if not is_terminal:
+                targets[index] = reward +  \
+                        self.gamma * np.amax(np.nan_to_num(self.model.predict(next_states)[0]))
+                assert(not np.isnan(targets))
+            else:
+                targets[index] = reward
+                
+        targets_f = self.model.predict(states)
+        for index in range(len(targets_f)):
+            targets_f[index][0][actions] = targets[index]
+            
+        self.model.fit(states, targets_f, epochs=1, verbose=0)
         
     def on_end_episode(self):
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
