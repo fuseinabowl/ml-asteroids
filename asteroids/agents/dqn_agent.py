@@ -60,20 +60,6 @@ class DQNAgent:
             
         return action_index
         
-    def train_one_frame(self, state, action, reward, next_state, done):
-        reshaped_state = state.reshape([1,1,self.state_size])
-        reshaped_next_state = next_state.reshape([1,1,self.state_size])
-
-        target = reward
-        assert(not np.any(np.isnan(target)))
-        if not done:
-            target = reward +  \
-                    self.gamma * np.amax(np.nan_to_num(self.model.predict(reshaped_next_state)[0]))
-            assert(not np.any(np.isnan(target)))
-        target_f = self.model.predict(reshaped_state)
-        target_f[0][0][action] = target
-        self.model.fit(reshaped_state, target_f, batch_size = 256, epochs=5, verbose=2, callbacks=[self.tensorboard])
-
     def train_from_mini_batch(self, states, actions, rewards, next_states, is_terminals):
         targets = np.zeros_like(rewards)
         
