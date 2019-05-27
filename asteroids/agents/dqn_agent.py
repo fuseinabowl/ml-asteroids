@@ -19,11 +19,13 @@ class DQNAgent:
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(16, input_shape=[1,self.state_size], activation=leaky_relu))
+        model.add(Dense(128, input_shape=[1,self.state_size], activation=leaky_relu))
         model.add(Dropout(rate=0.3))
-        model.add(Dense(16, activation=leaky_relu))
+        model.add(Dense(128, activation=leaky_relu))
         model.add(Dropout(rate=0.3))
-        model.add(Dense(self.action_size, activation='tanh'))
+        model.add(Dense(128, activation=leaky_relu))
+        model.add(Dropout(rate=0.3))
+        model.add(Dense(self.action_size, activation=leaky_relu))
         #model.add(LeakyReLU(alpha=0.3))
 
         #model.add(LSTM(64, batch_input_shape=[1,1,self.state_size], return_sequences=True, stateful=True, activation='tanh'))
