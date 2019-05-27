@@ -33,12 +33,12 @@ class OfflineTraining():
         self.last_seen_observation = self.env.reset()
         self.agent = dqn_agent.DQNAgent(self.env.observation_space.shape[0], self.env.action_space.spaces[0].n)
 
-        self.batch_size = 256
+        self.batch_size = 10000
 
         self.games_remaining = 100000
 
         self.steps_completed = 0
-        self.training_period = 256
+        self.training_period = self.batch_size
         
         def update_game():
             player_actions_as_single_value = self.agent.act(self.last_seen_observation)
