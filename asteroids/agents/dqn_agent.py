@@ -41,20 +41,26 @@ class DQNAgent:
                       optimizer=Adam(lr=self.learning_rate))
         return model
         
+    @staticmethod
+    def sharpen(mantissa, exponents):
+        """ like softmax, but with a custom mantissa """
+        mantissa_raised_to_exponents = np.power(mantissa * np.ones_like(exponents), exponents - np.max(exponents))
+        return mantissa_raised_to_exponents / mantissa_raised_to_exponents.sum()
+        
     def act(self, state):
         act_values = np.nan_to_num(self.model.predict(state.reshape([1,1,self.state_size])))
 
         assert(not np.any(np.isnan(act_values)))
 
-        act_values_sharpened = np.nan_to_num(np.power(self.action_probability_sharpening * np.ones_like(act_values[0][0]), act_values[0][0]))
-        sharpened_total = np.sum(act_values_sharpened)
-        act_values_probabilities = act_values_sharpened / sharpened_total if sharpened_total > 0 else [1 / sharpened_total] * self.action_size
+        act_values_probabilities = DQNAgent.sharpen(self.action_probability_sharpening, act_values[0][0])
         
         action_selector_value = random.random()
         for action_index, action_probability in enumerate(act_values_probabilities):
             action_selector_value = action_selector_value - action_probability
             if action_selector_value <= 0:
                 break
+            
+        assert(action_selector_value <= 0)
             
         return action_index
         
