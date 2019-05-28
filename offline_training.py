@@ -35,8 +35,6 @@ class OfflineTraining():
 
         self.batch_size = 10000
 
-        self.games_remaining = 100000
-
         self.steps_completed = 0
         self.training_period = 2048
         
@@ -59,9 +57,6 @@ class OfflineTraining():
             if is_done:
                 self.last_seen_observation = self.env.reset()
                 self.agent.on_end_episode()
-                self.games_remaining = self.games_remaining - 1
-                if self.games_remaining <= 0:
-                    return update_result.UpdateResult.GAME_COMPLETED
 
             return update_result.UpdateResult.CONTINUE_GAME
 
