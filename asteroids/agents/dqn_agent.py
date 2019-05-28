@@ -6,7 +6,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.nn import elu
 from tensorflow.keras import backend as keras_backend
 
-from tensorflow.keras.callbacks import TensorBoard
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import time
 
 NAME = 'asteroids-pilot-{}'.format(int(time.time()))
@@ -21,7 +21,6 @@ class DQNAgent:
         self.action_probability_sharpening = 1
         self.action_probability_sharpening_increase = 0.005
         self.action_probability_sharpening_max = 5
-        self.tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
         self.epoch_counter = 0
         self.model = self._build_model()
 
@@ -77,7 +76,9 @@ class DQNAgent:
         for index, action in enumerate(actions):
             targets_f[index][0][action] = targets[index]
             
-        self.model.fit([states], targets_f, validation_split=0.25, batch_size = 256, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard])
+        tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
+        checkpointer = ModelCheckpoint(filepath='models/{}.model'.format(NAME), verbose=1, save_best_only=True)
+        self.model.fit([states], targets_f, validation_split=0.25, batch_size = 256, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[tensorboard, checkpointer])
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
