@@ -16,10 +16,10 @@ class DQNAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.gamma = 0.95    # discount rate
+        self.gamma = 0.999    # discount rate
         self.learning_rate = 0.001
         self.action_probability_sharpening = 1
-        self.action_probability_sharpening_increase = 0.005
+        self.action_probability_sharpening_increase = 0.01
         self.action_probability_sharpening_max = 5
         self.epoch_counter = 0
         self.model = self._build_model()
@@ -40,7 +40,7 @@ class DQNAgent:
         model.compile(loss='mse',
                       optimizer=Adam(lr=self.learning_rate))
         return model
-        
+
     @staticmethod
     def sharpen(mantissa, exponents):
         """ like softmax, but with a custom mantissa """
@@ -59,7 +59,7 @@ class DQNAgent:
             action_selector_value = action_selector_value - action_probability
             if action_selector_value <= 0:
                 break
-            
+
         assert(action_selector_value <= 0)
             
         return action_index
