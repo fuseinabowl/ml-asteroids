@@ -35,8 +35,6 @@ class OfflineTraining():
         self.last_seen_observation = self.env.reset()
         self.agent = dqn_agent.DQNAgent(self.env.observation_space.shape[0], self.env.action_space.spaces[0].n)
 
-        self.batch_size = 10000
-
         self.steps_completed = 0
         self.training_period = 2048
         
