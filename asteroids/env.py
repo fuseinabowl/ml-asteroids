@@ -26,7 +26,7 @@ class Env(gym.Env):
         # clockwise around (index n-1 will be one counter clockwise from ship's nose)
         obs_space_low = np.zeros(shape = OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS + 1)
         obs_space_high = np.append(
-            (np.ones(shape = OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS) * OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE),
+            (np.ones(shape = OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS)),
             (np.ones(shape = 1))
         )
         self.observation_space = Box(
@@ -52,7 +52,7 @@ class Env(gym.Env):
         return self._gather_player_perceived_world_state()
 
     def _gather_player_perceived_world_state(self):
-        proximity_observation = self._world.do_proximity_raycasts_from_player(OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS, OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE)
+        proximity_observation = self._world.do_proximity_raycasts_from_player(OBSERVATION_SPACE_PROXIMITY_NUMBER_OF_RAYS, OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE) / OBSERVATION_SPACE_PROXIMITY_MAXIMUM_DISTANCE
         current_health = self._world.player_current_health
         health_observation = np.array([[np.clip(current_health,0,1)]])
         return np.append(proximity_observation, health_observation, axis=1)
