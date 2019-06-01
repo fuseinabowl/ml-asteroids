@@ -10,6 +10,7 @@ from tensorflow.keras.losses import mean_squared_error
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import time
 
+NAME = 'asteroids-pilot-512-more_asteroids-{}'.format(int(time.time()))
 EPOCHS_PER_TRAIN_STEP = 2
 
 class DQNAgent:
