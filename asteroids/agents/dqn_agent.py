@@ -1,7 +1,7 @@
 import random
 import numpy as np
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout
+from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout, CuDNNLSTM
 from tensorflow.keras.optimizers import Adam
 from tensorflow.nn import leaky_relu
 from tensorflow.keras import backend as keras_backend
@@ -10,8 +10,9 @@ from tensorflow.keras.losses import mean_squared_error
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import time
 
-NAME = 'asteroids-pilot-512-more_asteroids-{}'.format(int(time.time()))
+NAME = 'asteroids-pilot-512-LSTM-{}'.format(int(time.time()))
 EPOCHS_PER_TRAIN_STEP = 2
+BATCH_SIZE = 256
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -30,13 +31,17 @@ class DQNAgent:
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(512, input_shape=[1,self.state_size], activation=leaky_relu))
+        model.add(CuDNNLSTM(512, batch_input_shape=(BATCH_SIZE, 1, self.state_size), return_sequences=True, stateful=True))
+        model.add(LeakyReLU())
         model.add(Dropout(rate=0.3))
-        model.add(Dense(512, activation=leaky_relu))
+        model.add(CuDNNLSTM(512, return_sequences=True, stateful=True))
+        model.add(LeakyReLU())
         model.add(Dropout(rate=0.3))
-        model.add(Dense(512, activation=leaky_relu))
+        model.add(CuDNNLSTM(512, return_sequences=True, stateful=True))
+        model.add(LeakyReLU())
         model.add(Dropout(rate=0.3))
-        model.add(Dense(self.action_size, activation=leaky_relu))
+        model.add(CuDNNLSTM(self.action_size, return_sequences=False, stateful=True))
+        model.add(LeakyReLU())
 
         model.compile(loss=mean_squared_error,
                       optimizer=Adam(lr=self.learning_rate))
@@ -49,11 +54,14 @@ class DQNAgent:
         return mantissa_raised_to_exponents / mantissa_raised_to_exponents.sum()
         
     def act(self, state):
-        act_values = np.nan_to_num(self.model.predict(state.reshape([1,1,self.state_size])))
+        one_sample = state.reshape([1,1,self.state_size])
+        full_batch = np.tile(one_sample, (BATCH_SIZE, 1, 1))
+        batch_act_values = np.nan_to_num(self.model.predict(full_batch))
+        act_values = batch_act_values[0]
 
         assert(not np.any(np.isnan(act_values)))
 
-        act_values_probabilities = DQNAgent.sharpen(self.action_probability_sharpening, act_values[0][0])
+        act_values_probabilities = DQNAgent.sharpen(self.action_probability_sharpening, act_values)
         
         action_selector_value = random.random()
         for action_index, action_probability in enumerate(act_values_probabilities):

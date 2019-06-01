@@ -17,13 +17,24 @@ class ReplayFrame():
         action,
         reward,
         next_observation,
-        is_done
+        is_done,
+        rnn_states
     ):
         self.observation = observation
         self.action = action
         self.reward = reward
         self.next_observation = next_observation
         self.is_done = is_done
+        self.rnn_states = rnn_states
+
+def collect_states_from_model(model):
+    states = []
+    for layer in model.layers:
+        if layer.stateful:
+            states.append(layer.states)
+        else:
+            states.append(None)
+    return states
 
 class OfflineTraining():
 
@@ -41,7 +52,7 @@ class OfflineTraining():
         def update_game():
             player_actions_as_single_value = self.agent.act(self.last_seen_observation)
             next_observation, reward, is_done, _ = self.env.step(player_actions_as_single_value)
-            self.replays.append(ReplayFrame(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done))
+            self.replays.append(ReplayFrame(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done, collect_states_from_model(self.agent.model)))
             self.last_seen_observation = next_observation
 
             self.steps_completed = self.steps_completed + 1
