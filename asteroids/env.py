@@ -59,7 +59,7 @@ class Env(gym.Env):
 
     def get_score(self, health, is_done):
         if is_done:
-            return -100
+            return -10000
         else:
             score = BASE_STAY_ALIVE_SCORE
             score = score + (health / world.MAX_PLAYER_HEALTH) / (1 - BASE_STAY_ALIVE_SCORE)
