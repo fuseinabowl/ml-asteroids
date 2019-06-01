@@ -13,6 +13,7 @@ import time
 NAME = 'asteroids-pilot-512-LSTM-{}'.format(int(time.time()))
 EPOCHS_PER_TRAIN_STEP = 2
 BATCH_SIZE = 256
+TIMESPAN_LENGTH = 5
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -25,22 +26,23 @@ class DQNAgent:
         self.action_probability_sharpening_max = 5
         self.epoch_counter = 0
         self.model = self._build_model()
+        self._internal_replay = np.zeros(shape=(1,TIMESPAN_LENGTH,state_size))
 
         keras_backend.set_learning_phase(0)
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(CuDNNLSTM(512, batch_input_shape=(BATCH_SIZE, 1, self.state_size), return_sequences=True, stateful=True))
+        model.add(CuDNNLSTM(512, input_shape=(TIMESPAN_LENGTH, self.state_size), return_sequences=True))
         model.add(LeakyReLU())
         model.add(Dropout(rate=0.3))
-        model.add(CuDNNLSTM(512, return_sequences=True, stateful=True))
+        model.add(CuDNNLSTM(512, return_sequences=True))
         model.add(LeakyReLU())
         model.add(Dropout(rate=0.3))
-        model.add(CuDNNLSTM(512, return_sequences=True, stateful=True))
+        model.add(CuDNNLSTM(512, return_sequences=True))
         model.add(LeakyReLU())
         model.add(Dropout(rate=0.3))
-        model.add(CuDNNLSTM(self.action_size, return_sequences=False, stateful=True))
+        model.add(CuDNNLSTM(self.action_size, return_sequences=False))
         model.add(LeakyReLU())
 
         model.compile(loss=mean_squared_error,
@@ -54,9 +56,11 @@ class DQNAgent:
         return mantissa_raised_to_exponents / mantissa_raised_to_exponents.sum()
         
     def act(self, state):
-        one_sample = state.reshape([1,1,self.state_size])
-        full_batch = np.tile(one_sample, (BATCH_SIZE, 1, 1))
-        batch_act_values = np.nan_to_num(self.model.predict(full_batch))
+        new_replay_state = state.reshape((1,1,self.state_size))
+        last_frame_culled_internal_replay = self._internal_replay[:,1:,:]
+        self._internal_replay = np.append(last_frame_culled_internal_replay, new_replay_state, axis=1)
+
+        batch_act_values = np.nan_to_num(self.model.predict(self._internal_replay))
         act_values = batch_act_values[0]
 
         assert(not np.any(np.isnan(act_values)))
@@ -77,8 +81,8 @@ class DQNAgent:
         keras_backend.set_learning_phase(1)
         targets = np.zeros_like(rewards)
         
-        next_state_predicted_rewards = np.amax(np.nan_to_num(self.model.predict([next_states])), axis=2)
-        next_state_predicted_rewards = next_state_predicted_rewards.reshape((-1,))
+        next_state_predicted_rewards = np.nan_to_num(self.model.predict([next_states]))
+        next_state_predicted_rewards = np.amax(next_state_predicted_rewards, axis=1).reshape((-1,))
         
         for index, (reward, is_terminal, predicted_next_reward) in enumerate(zip(rewards, is_terminals, next_state_predicted_rewards)):
             if not is_terminal:
@@ -89,11 +93,11 @@ class DQNAgent:
                 
         targets_f = self.model.predict([states])
         for index, action in enumerate(actions):
-            targets_f[index][0][action] = targets[index]
+            targets_f[index][action] = targets[index]
             
         tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
         checkpointer = ModelCheckpoint(filepath='models/{}.model'.format(NAME), verbose=1, save_best_only=True)
-        self.model.fit([states], targets_f, validation_split=0.25, batch_size = 256, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[tensorboard, checkpointer])
+        self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, shuffle = False, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[tensorboard, checkpointer])
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
