@@ -5,6 +5,7 @@ from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.nn import leaky_relu
 from tensorflow.keras import backend as keras_backend
+from tensorflow.keras.losses import mean_squared_error
 
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import time
@@ -37,7 +38,7 @@ class DQNAgent:
         model.add(Dropout(rate=0.3))
         model.add(Dense(self.action_size, activation=leaky_relu))
 
-        model.compile(loss='mse',
+        model.compile(loss=mean_squared_error,
                       optimizer=Adam(lr=self.learning_rate))
         return model
 
