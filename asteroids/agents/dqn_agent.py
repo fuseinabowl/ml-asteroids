@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
-from tensorflow.nn import elu
+from tensorflow.nn import leaky_relu
 from tensorflow.keras import backend as keras_backend
 
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
@@ -29,13 +29,13 @@ class DQNAgent:
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(128, input_shape=[1,self.state_size], activation=elu))
+        model.add(Dense(512, input_shape=[1,self.state_size], activation=leaky_relu))
         model.add(Dropout(rate=0.3))
-        model.add(Dense(128, activation=elu))
+        model.add(Dense(512, activation=leaky_relu))
         model.add(Dropout(rate=0.3))
-        model.add(Dense(128, activation=elu))
+        model.add(Dense(512, activation=leaky_relu))
         model.add(Dropout(rate=0.3))
-        model.add(Dense(self.action_size, activation=elu))
+        model.add(Dense(self.action_size, activation=leaky_relu))
 
         model.compile(loss='mse',
                       optimizer=Adam(lr=self.learning_rate))
