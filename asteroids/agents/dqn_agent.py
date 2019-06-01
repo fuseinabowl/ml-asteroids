@@ -34,15 +34,12 @@ class DQNAgent:
         # Neural Net for Deep-Q learning Model
         model = Sequential()
         model.add(CuDNNLSTM(512, input_shape=(TIMESPAN_LENGTH, self.state_size), return_sequences=True))
-        model.add(LeakyReLU())
         model.add(Dropout(rate=0.3))
         model.add(CuDNNLSTM(512, return_sequences=True))
-        model.add(LeakyReLU())
         model.add(Dropout(rate=0.3))
-        model.add(CuDNNLSTM(512, return_sequences=True))
-        model.add(LeakyReLU())
+        model.add(CuDNNLSTM(512, return_sequences=False))
         model.add(Dropout(rate=0.3))
-        model.add(CuDNNLSTM(self.action_size, return_sequences=False))
+        model.add(Dense(self.action_size))
         model.add(LeakyReLU())
 
         model.compile(loss=mean_squared_error,
