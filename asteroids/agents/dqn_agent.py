@@ -97,7 +97,7 @@ class DQNAgent:
             
         tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
         checkpointer = ModelCheckpoint(filepath='models/{}.model'.format(NAME), verbose=1, save_best_only=True)
-        self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, shuffle = False, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[tensorboard, checkpointer])
+        self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[tensorboard, checkpointer])
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
