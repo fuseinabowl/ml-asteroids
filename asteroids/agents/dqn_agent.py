@@ -53,7 +53,7 @@ class DQNAgent:
         advantage_estimator = Dense(self.action_size)(combined_model)
         advantage_estimator = LeakyReLU()(advantage_estimator)
 
-        quality_estimator = Lambda(lambda a, b: a + b - backend.mean(b, axis=1, keepdims=True), output_shape=(self.action_size,))(value_estimator, advantage_estimator)
+        quality_estimator = Lambda(lambda tensors: tensors[0] + tensors[1] - keras_backend.mean(tensors[1], axis=1, keepdims=True), output_shape=(self.action_size,))([value_estimator, advantage_estimator])
         
         model = Model(inputs=inputs, outputs=quality_estimator)
 
