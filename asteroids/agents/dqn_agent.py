@@ -1,7 +1,7 @@
 import random
 import numpy as np
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout, CuDNNLSTM
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import Lambda, Input, LSTM, LeakyReLU, Dense, Dropout, CuDNNLSTM
 from tensorflow.keras.optimizers import Adam
 from tensorflow.nn import leaky_relu
 from tensorflow.keras import backend as keras_backend
