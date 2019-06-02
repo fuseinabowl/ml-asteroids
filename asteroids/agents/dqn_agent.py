@@ -35,15 +35,27 @@ class DQNAgent:
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
-        model = Sequential()
-        model.add(CuDNNLSTM(512, input_shape=(TIMESPAN_LENGTH, self.state_size), return_sequences=True))
-        model.add(Dropout(rate=0.3))
-        model.add(CuDNNLSTM(512, return_sequences=True))
-        model.add(Dropout(rate=0.3))
-        model.add(CuDNNLSTM(512, return_sequences=False))
-        model.add(Dropout(rate=0.3))
-        model.add(Dense(self.action_size))
-        model.add(LeakyReLU())
+        inputs = Input(shape=(TIMESPAN_LENGTH, self.state_size))
+
+        combined_model = Sequential()
+        combined_model.add(CuDNNLSTM(512, input_shape=(TIMESPAN_LENGTH, self.state_size), return_sequences=True))
+        combined_model.add(Dropout(rate=0.3))
+        combined_model.add(CuDNNLSTM(512, return_sequences=True))
+        combined_model.add(Dropout(rate=0.3))
+        combined_model.add(CuDNNLSTM(512, return_sequences=False))
+        combined_model.add(Dropout(rate=0.3))
+
+        combined_model = combined_model(inputs)
+
+        value_estimator = Dense(1)(combined_model)
+        value_estimator = LeakyReLU()(value_estimator)
+
+        advantage_estimator = Dense(self.action_size)(combined_model)
+        advantage_estimator = LeakyReLU()(advantage_estimator)
+
+        quality_estimator = Lambda(lambda a, b: a + b - backend.mean(b, axis=1, keepdims=True), output_shape=(self.action_size,))(value_estimator, advantage_estimator)
+        
+        model = Model(inputs=inputs, outputs=quality_estimator)
 
         model.compile(loss=mean_squared_error,
                       optimizer=Adam(lr=self.learning_rate))
