@@ -1,5 +1,10 @@
 import pyglet
 
+import argparse
+import os.path
+import glob
+import datetime
+
 from collections import deque
 from random import shuffle
 
@@ -7,6 +12,8 @@ from asteroids import env as environment
 from asteroids.renderer import renderer
 from asteroids.game import update_result
 from asteroids.agents import dqn_agent
+
+from tensorflow.keras.models import load_model
 
 import numpy as np
 
@@ -29,11 +36,11 @@ class ReplayFrame():
 
 class OfflineTraining():
 
-    def main(self):
+    def main(self, custom_model = None):
         self.env = environment.Env()
         self.replays = deque(maxlen = NUMBER_OF_REPLAY_FRAMES_STORED)
         self.last_seen_observation = self.env.reset()
-        self.agent = dqn_agent.DQNAgent(self.env.observation_space.shape[0], self.env.action_space.spaces[0].n)
+        self.agent = dqn_agent.DQNAgent(self.env.observation_space.shape[0], self.env.action_space.spaces[0].n, model=custom_model)
 
         self.steps_completed = 0
         self.training_period = 2048
@@ -82,7 +89,28 @@ class OfflineTraining():
             ))
         return batch_data
 
+def get_latest_file(file_pattern,path=None):
+    if path is None:
+        list_of_files = glob.glob('{0}'.format(file_pattern))
+        if len(list_of_files)> 0:
+            return os.path.split(max(list_of_files, key = os.path.getctime))[1]
+    else:
+        list_of_files = glob.glob('{0}/{1}'.format(path, file_pattern))
+        if len(list_of_files) > 0:
+            return os.path.split(max(list_of_files,key=os.path.getctime))[1]
+    return False
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Train an agent to play the asteroids gym.')
+    parser.add_argument('--resume_last_training_session', action='store_true')
+    args = parser.parse_args()
+    
+    model = None
+
+    if args.resume_last_training_session:
+        model_filepath = get_latest_file(file_pattern='*.model', path='models')
+        if model_filepath:
+            model = load_model(os.path.join('models', model_filepath))
+
     trainer = OfflineTraining()
-    trainer.main()
+    trainer.main(model)

@@ -13,10 +13,10 @@ import time
 NAME = 'asteroids-pilot-512-LSTM-{}'.format(int(time.time()))
 EPOCHS_PER_TRAIN_STEP = 2
 BATCH_SIZE = 256
-TIMESPAN_LENGTH = 5
+TIMESPAN_LENGTH = 25
 
 class DQNAgent:
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, model=None):
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = 0.999    # discount rate
@@ -25,7 +25,10 @@ class DQNAgent:
         self.action_probability_sharpening_increase = 0.01
         self.action_probability_sharpening_max = 5
         self.epoch_counter = 0
-        self.model = self._build_model()
+        if model is not None:
+            self.model = model
+        else:
+            self.model = self._build_model()
         self._reset_internal_replay()
 
         keras_backend.set_learning_phase(0)
