@@ -10,7 +10,7 @@ from tensorflow.keras.losses import mean_squared_error
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import time
 
-NAME = 'asteroids-pilot-512-LSTM-{}'.format(int(time.time()))
+NAME = 'asteroids-pilot-DuelingDQN-{}'.format(int(time.time()))
 EPOCHS_PER_TRAIN_STEP = 2
 BATCH_SIZE = 256
 TIMESPAN_LENGTH = 25
