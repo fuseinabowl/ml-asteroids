@@ -26,7 +26,7 @@ class DQNAgent:
         self.action_probability_sharpening_max = 5
         self.epoch_counter = 0
         self.model = self._build_model()
-        self._internal_replay = np.zeros(shape=(1,TIMESPAN_LENGTH,state_size))
+        self._reset_internal_replay()
 
         keras_backend.set_learning_phase(0)
 
@@ -102,3 +102,7 @@ class DQNAgent:
 
     def on_end_episode(self):
         self.model.reset_states()
+        self._reset_internal_replay()
+
+    def _reset_internal_replay(self):
+        self._internal_replay = np.zeros(shape=(1,TIMESPAN_LENGTH,self.state_size))
