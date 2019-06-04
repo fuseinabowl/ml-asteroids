@@ -12,7 +12,7 @@ from collections import deque
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LambdaCallback
 import time
 
-NAME = 'asteroids-pilot-DuelingDQN-0penalty-{}'.format(int(time.time()))
+NAME = 'asteroids-pilot-DuelingDQN-{}'.format(int(time.time()))
 EPOCHS_PER_TRAIN_STEP = 2
 BATCH_SIZE = 256
 TIMESPAN_LENGTH = 25
