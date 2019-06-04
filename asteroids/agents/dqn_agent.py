@@ -6,8 +6,9 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.nn import leaky_relu
 from tensorflow.keras import backend as keras_backend
 from tensorflow.keras.losses import mean_squared_error
+import tensorflow as tf
 
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LambdaCallback
 import time
 
 NAME = 'asteroids-pilot-DuelingDQN-{}'.format(int(time.time()))
@@ -31,8 +32,26 @@ class DQNAgent:
             self.model = self._build_model()
         self._reset_internal_replay()
         
-        self.tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
+        log_dir = 'logs/{}'.format(NAME)
+        self.tensorboard = TensorBoard(log_dir=log_dir)
         self.checkpointer = ModelCheckpoint(filepath='models/{}.model'.format(NAME), verbose=1, save_best_only=True)
+
+        learning_rate_placeholder = tf.placeholder(tf.float32, [], name = "learning_rate")
+        summary_tensor = tf.summary.scalar('learning rate', tensor=learning_rate_placeholder, family='game performance')
+        score_placeholder = tf.placeholder(tf.float32, [], name = "score")
+        score_tensor = tf.summary.scalar('average score', tensor=score_placeholder, family='game performance')
+        sharpening_placeholder = tf.placeholder(tf.float32, [], name = "sharpening")
+        sharpening_tensor = tf.summary.scalar('choice confidence', tensor=sharpening_placeholder, family='game performance')
+        def write_game_performance(epoch, logs):
+            summary_strings = keras_backend.get_session().run([summary_tensor, score_tensor, sharpening_tensor], feed_dict={
+                learning_rate_placeholder:self.learning_rate,
+                score_placeholder:self.calculate_average_score(),
+                sharpening_placeholder:self.action_probability_sharpening,
+            })
+            for summary_str in summary_strings:
+                self.tensorboard.writer.add_summary(summary_str, epoch)
+
+        self.game_performance_logger = LambdaCallback(on_epoch_end=write_game_performance)
 
         keras_backend.set_learning_phase(0)
 
@@ -110,7 +129,7 @@ class DQNAgent:
         for index, action in enumerate(actions):
             targets_f[index][action] = targets[index]
             
-        self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard, self.checkpointer])
+        self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard, self.checkpointer, self.game_performance_logger])
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
