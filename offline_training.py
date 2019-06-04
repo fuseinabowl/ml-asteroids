@@ -50,6 +50,7 @@ class OfflineTraining():
             next_observation, reward, is_done, _ = self.env.step(player_actions_as_single_value)
             self.replays.append(ReplayFrame(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done))
             self.last_seen_observation = next_observation
+            self.agent.store_action_reward(reward)
 
             self.steps_completed = self.steps_completed + 1
             if self.steps_completed % self.training_period == 0:

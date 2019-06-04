@@ -7,6 +7,7 @@ from tensorflow.nn import leaky_relu
 from tensorflow.keras import backend as keras_backend
 from tensorflow.keras.losses import mean_squared_error
 import tensorflow as tf
+from collections import deque
 
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LambdaCallback
 import time
@@ -35,6 +36,9 @@ class DQNAgent:
         log_dir = 'logs/{}'.format(NAME)
         self.tensorboard = TensorBoard(log_dir=log_dir)
         self.checkpointer = ModelCheckpoint(filepath='models/{}.model'.format(NAME), verbose=1, save_best_only=True)
+
+        self._this_game_reward = 0
+        self._last_games_rewards = deque(maxlen=10)
 
         learning_rate_placeholder = tf.placeholder(tf.float32, [], name = "learning_rate")
         summary_tensor = tf.summary.scalar('learning rate', tensor=learning_rate_placeholder, family='game performance')
@@ -138,6 +142,17 @@ class DQNAgent:
     def on_end_episode(self):
         self.model.reset_states()
         self._reset_internal_replay()
+        self._last_games_rewards.append(self._this_game_reward)
+        self._this_game_reward = 0
 
     def _reset_internal_replay(self):
         self._internal_replay = np.zeros(shape=(1,TIMESPAN_LENGTH,self.state_size))
+
+    def store_action_reward(self, reward):
+        self._this_game_reward += reward
+
+    def calculate_average_score(self):
+        if len(self._last_games_rewards) == 0:
+            return 0
+        else:
+            return sum(self._last_games_rewards) / len(self._last_games_rewards)
