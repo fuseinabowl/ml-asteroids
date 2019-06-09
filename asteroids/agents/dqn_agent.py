@@ -12,7 +12,7 @@ from collections import deque
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LambdaCallback
 import time
 
-NAME = 'asteroids-pilot-DuelingDQN-{}'.format(int(time.time()))
+NAME = 'asteroids-pilot-DuelingDQN-whole_replay_window{}'.format(int(time.time()))
 EPOCHS_PER_TRAIN_STEP = 2
 BATCH_SIZE = 256
 TIMESPAN_LENGTH = 25
@@ -21,11 +21,11 @@ class DQNAgent:
     def __init__(self, state_size, action_size, model=None):
         self.state_size = state_size
         self.action_size = action_size
-        self.gamma = 0.999    # discount rate
+        self.gamma = 0.99    # discount rate
         self.learning_rate = 0.001
         self.action_probability_sharpening = 1
-        self.action_probability_sharpening_increase = 0.01
-        self.action_probability_sharpening_max = 5
+        self.action_probability_sharpening_increase = 0.02
+        self.action_probability_sharpening_max = 2
         self.epoch_counter = 0
         if model is not None:
             self.model = model
