@@ -38,7 +38,7 @@ ML implementation
  + Use deque to expose only the most recent steps to the mini-batch selection
  + Train after so many recordings have been made
 * LSTMs!
-- save models from the online training
++ save models from the online training
 - implement online model loading and run the trained models in evaluation mode
 - implement offline training and save models
 - implement trainer fork and multiprocess communication to receive a model from the training process, show in real time
@@ -60,3 +60,10 @@ Further work
   * not sure this is interesting from a NN standpoint, it will be able to train on these probably and it's not super new
 - Adversarial world, spawns asteroids in a way that kills the player the most effectively
   * will train the bot faster too (probably!)
+
+Game feel
+- parralax background
+- thruster effects
+- sound effects
+- particle effects from asteroid-asteroid collision
+- particle effects from asteroid-player collision
