@@ -1,16 +1,18 @@
 import random
 import numpy as np
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, LeakyReLU, Dense, Dropout, CuDNNLSTM
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import Lambda, Input, LSTM, LeakyReLU, Dense, Dropout, CuDNNLSTM
 from tensorflow.keras.optimizers import Adam
 from tensorflow.nn import leaky_relu
 from tensorflow.keras import backend as keras_backend
 from tensorflow.keras.losses import mean_squared_error
+import tensorflow as tf
+from collections import deque
 
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LambdaCallback
 import time
 
-NAME = 'asteroids-pilot-512-LSTM-{}'.format(int(time.time()))
+NAME = 'asteroids-pilot-DuelingDQN-whole_replay_window{}'.format(int(time.time()))
 EPOCHS_PER_TRAIN_STEP = 2
 BATCH_SIZE = 256
 TIMESPAN_LENGTH = 25
@@ -19,31 +21,67 @@ class DQNAgent:
     def __init__(self, state_size, action_size, model=None):
         self.state_size = state_size
         self.action_size = action_size
-        self.gamma = 0.999    # discount rate
+        self.gamma = 0.99    # discount rate
         self.learning_rate = 0.001
         self.action_probability_sharpening = 1
-        self.action_probability_sharpening_increase = 0.01
-        self.action_probability_sharpening_max = 5
+        self.action_probability_sharpening_increase = 0.02
+        self.action_probability_sharpening_max = 2
         self.epoch_counter = 0
         if model is not None:
             self.model = model
         else:
             self.model = self._build_model()
         self._reset_internal_replay()
+        
+        log_dir = 'logs/{}'.format(NAME)
+        self.tensorboard = TensorBoard(log_dir=log_dir)
+        self.checkpointer = ModelCheckpoint(filepath='models/{}.model'.format(NAME), verbose=1, save_best_only=True)
+
+        self._this_game_reward = 0
+        self._last_games_rewards = deque(maxlen=10)
+
+        learning_rate_placeholder = tf.placeholder(tf.float32, [], name = "learning_rate")
+        summary_tensor = tf.summary.scalar('learning rate', tensor=learning_rate_placeholder, family='game performance')
+        score_placeholder = tf.placeholder(tf.float32, [], name = "score")
+        score_tensor = tf.summary.scalar('average score', tensor=score_placeholder, family='game performance')
+        sharpening_placeholder = tf.placeholder(tf.float32, [], name = "sharpening")
+        sharpening_tensor = tf.summary.scalar('choice confidence', tensor=sharpening_placeholder, family='game performance')
+        def write_game_performance(epoch, logs):
+            summary_strings = keras_backend.get_session().run([summary_tensor, score_tensor, sharpening_tensor], feed_dict={
+                learning_rate_placeholder:self.learning_rate,
+                score_placeholder:self.calculate_average_score(),
+                sharpening_placeholder:self.action_probability_sharpening,
+            })
+            for summary_str in summary_strings:
+                self.tensorboard.writer.add_summary(summary_str, epoch)
+
+        self.game_performance_logger = LambdaCallback(on_epoch_end=write_game_performance)
 
         keras_backend.set_learning_phase(0)
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
-        model = Sequential()
-        model.add(CuDNNLSTM(512, input_shape=(TIMESPAN_LENGTH, self.state_size), return_sequences=True))
-        model.add(Dropout(rate=0.3))
-        model.add(CuDNNLSTM(512, return_sequences=True))
-        model.add(Dropout(rate=0.3))
-        model.add(CuDNNLSTM(512, return_sequences=False))
-        model.add(Dropout(rate=0.3))
-        model.add(Dense(self.action_size))
-        model.add(LeakyReLU())
+        inputs = Input(shape=(TIMESPAN_LENGTH, self.state_size))
+
+        combined_model = Sequential()
+        combined_model.add(CuDNNLSTM(512, input_shape=(TIMESPAN_LENGTH, self.state_size), return_sequences=True))
+        combined_model.add(Dropout(rate=0.3))
+        combined_model.add(CuDNNLSTM(512, return_sequences=True))
+        combined_model.add(Dropout(rate=0.3))
+        combined_model.add(CuDNNLSTM(512, return_sequences=False))
+        combined_model.add(Dropout(rate=0.3))
+
+        combined_model = combined_model(inputs)
+
+        value_estimator = Dense(1)(combined_model)
+        value_estimator = LeakyReLU()(value_estimator)
+
+        advantage_estimator = Dense(self.action_size)(combined_model)
+        advantage_estimator = LeakyReLU()(advantage_estimator)
+
+        quality_estimator = Lambda(lambda tensors: tensors[0] + tensors[1] - keras_backend.mean(tensors[1], axis=1, keepdims=True), output_shape=(self.action_size,))([value_estimator, advantage_estimator])
+        
+        model = Model(inputs=inputs, outputs=quality_estimator)
 
         model.compile(loss=mean_squared_error,
                       optimizer=Adam(lr=self.learning_rate))
@@ -95,9 +133,7 @@ class DQNAgent:
         for index, action in enumerate(actions):
             targets_f[index][action] = targets[index]
             
-        tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
-        checkpointer = ModelCheckpoint(filepath='models/{}.model'.format(NAME), verbose=1, save_best_only=True)
-        self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[tensorboard, checkpointer])
+        self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard, self.checkpointer, self.game_performance_logger])
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
         self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
@@ -106,6 +142,17 @@ class DQNAgent:
     def on_end_episode(self):
         self.model.reset_states()
         self._reset_internal_replay()
+        self._last_games_rewards.append(self._this_game_reward)
+        self._this_game_reward = 0
 
     def _reset_internal_replay(self):
         self._internal_replay = np.zeros(shape=(1,TIMESPAN_LENGTH,self.state_size))
+
+    def store_action_reward(self, reward):
+        self._this_game_reward += reward
+
+    def calculate_average_score(self):
+        if len(self._last_games_rewards) == 0:
+            return 0
+        else:
+            return sum(self._last_games_rewards) / len(self._last_games_rewards)
