@@ -67,3 +67,75 @@ Game feel
 - sound effects
 - particle effects from asteroid-asteroid collision
 - particle effects from asteroid-player collision
+
+1 month goals:
+Get a working good looking asteroids game + agent
+Do a multipart vlog on what I've done and things that happened along the way
+
+- Priority Replay - 4 hours total
+ - recording replay priority - 1 hour
+ - selecting replays for mini batch - 2 hours
+ - scaling up over time - 1 hour
+
+- LSTM cells - 11 hours total
+ - return to single frame replays - 1 hour
+ - return to single frame inputs - 1 hour
+ - use LSTM cells with non-sequential model to feed in the cell states. Feed in fixed state for this step - 2 hours
+ - reimplement to allow rollout so I can train over multiple frames (model that feeds the output of the previous model into itself multiple times) - 3 hours
+ - store the last seen cell state in in game, feed it in next frame - 1 hour
+ - record the last seen cell state, feed the state into the training batch - 3 hours
+
+- Conv net for first 2 layers - 4 hours total
+ - Add 2 ConvLSTMCell layers (+ max pool) to front of network - 4 hours (maybe complications because of non-standard cell states?)
+
+- Genetically evolve the architecture - 11-18 hours total
+ - Determine what can be parameterised - 2 hours
+ - Create a model from a representation - 2 hours
+ - Serialise and deserialise representations (JSON) - 1 hour
+ - Create single-threaded but separate genetic algorithm to create a population of 8, runs them all and returns the best 4
+  - Create random population of 8 - 1 hour
+  - Sequentially trigger training on each model - 1 hour
+  - Pipe the models' qualities back to the algorithm, to return the best 4 - 1 hour
+ - Modify single-threaded GA to multi-threaded
+  - multiprocess to trigger training, instead of basic for loop (return dummy value for quality as soon as training completes) - 1 hour
+  - receive the qualities of models as they train through pipes back to the main thread - 1 hour
+  - fix stuff broken by multiprocessing - 1-8 hours
+
+- Better aesthetics - 23-25 hours total
+ - Art - 13 hours total
+  - parralax background based on ship location - 2 hours
+  - parralax foreground based on ship location (move camera to a fixed fraction between center and ship location) - 2 hours
+  - ship thruster trails
+   - smoothed thrusting value - 1 hour
+   - eject burner particles based on thrusting value + ship velocity - 1 hour
+   - scale burner particles opacity based on thrusting value - 1 hour
+  - screen shake rig - 2 hours
+  - add screen shake on player collision - 1 hour
+  - detect asteroids crashing - 2 hours
+  - add screen shake on nearby asteroid-asteroid collision - 1 hour
+ - Audio - 10-12 hours total
+  - ship thrusting audio, looping, increase in volume as thrusting value increases - 2-4 hours (haven't done audio yet)
+  - ship crash audio - 6 hours total
+   - play audio when any crash damage comes in - 1 hour
+   - add fixed minimum delay before crash refire - 1 hour
+   - change crash volume based on crash damage - 1 hour
+   - change crash pitch based on player remaining health - 1 hour
+   - detect what you crashed with (asteroid or edge of screen) - 1 hour
+   - play shield bounce if you hit the edge of the screen - 1 hour
+  - asteroid-asteroid crash audio - 2 hours total
+   - play audio on asteroids crashing - 1 hour
+   - add fixed minimum delay before crash refire - 1 hour
+
+- Vlogs (10 minutes vids)
+ - determine content - 1 hour
+ - per episode:
+  - write 1st script - 2 hours
+  - edit pass - 2 hours
+  - record 1st - 20 minutes
+  - critique - 2 hours
+  - optional edit script - 2 hours
+  - record 2nd - 20 minutes
+  - edit video
+   - audio processing - 1 hour
+   - art - completely dependent upon video
+    - limit to 4 hours? 
