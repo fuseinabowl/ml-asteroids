@@ -113,7 +113,7 @@ class DQNAgent:
 
         assert(action_selector_value <= 0)
             
-        return action_index
+        return action_index, act_values[action_index], np.max(act_values)
         
     def train_from_mini_batch(self, states, actions, rewards, next_states, is_terminals):
         keras_backend.set_learning_phase(1)

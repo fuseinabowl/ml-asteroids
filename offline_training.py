@@ -18,6 +18,8 @@ from tensorflow.keras.models import load_model
 import numpy as np
 
 NUMBER_OF_REPLAY_FRAMES_STORED = 20000
+TRAINING_PERIOD = 2000
+PRIORITY_EPSILON = 100
 
 class ReplayFrame():
     def __init__(
@@ -33,6 +35,7 @@ class ReplayFrame():
         self.reward = reward
         self.next_observation = next_observation
         self.is_done = is_done
+        self.priority = None # to be filled by caller later
 
 class OfflineTraining():
 
@@ -43,12 +46,24 @@ class OfflineTraining():
         self.agent = dqn_agent.DQNAgent(self.env.observation_space.shape[0], self.env.action_space.spaces[0].n, model=custom_model)
 
         self.steps_completed = 0
-        self.training_period = NUMBER_OF_REPLAY_FRAMES_STORED
+        self.training_period = TRAINING_PERIOD
+
+        self._last_action_estimated_quality = None
+        self._previous_frame_replay_data = None
         
         def update_game():
-            player_actions_as_single_value = self.agent.act(self.last_seen_observation)
+            player_actions_as_single_value, action_quality, best_action_quality = self.agent.act(self.last_seen_observation)
             next_observation, reward, is_done, _ = self.env.step(player_actions_as_single_value)
-            self.replays.append(ReplayFrame(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done))
+            if self._previous_frame_replay_data:
+                assert(self._last_action_estimated_quality)
+                future_quality_contribution = (self.agent.gamma * best_action_quality) if not self._previous_frame_replay_data.is_done else 0
+                last_action_quality_with_estimated_future = self._previous_frame_replay_data.reward + future_quality_contribution
+                self._previous_frame_replay_data.priority = abs(last_action_quality_with_estimated_future - self._previous_frame_replay_data.reward) + PRIORITY_EPSILON
+                self.replays.append(self._previous_frame_replay_data)
+                
+            self._previous_frame_replay_data = ReplayFrame(self.last_seen_observation, player_actions_as_single_value, reward, next_observation, is_done)
+                
+            self._last_action_estimated_quality = action_quality
             self.last_seen_observation = next_observation
             self.agent.store_action_reward(reward)
 
