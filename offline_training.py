@@ -20,6 +20,7 @@ import numpy as np
 NUMBER_OF_REPLAY_FRAMES_STORED = 20000
 TRAINING_PERIOD = 2000
 PRIORITY_EPSILON = 100
+MINI_BATCH_SIZE = 10000
 
 class ReplayFrame():
     def __init__(
@@ -47,6 +48,12 @@ class OfflineTraining():
 
         self.steps_completed = 0
         self.training_period = TRAINING_PERIOD
+
+        self.priority_alpha = 0
+        self.priority_alpha_delta = 0.001
+        self.priority_alpha_max = 1
+
+        self.mini_batch_size = MINI_BATCH_SIZE
 
         self._last_action_estimated_quality = None
         self._previous_frame_replay_data = None
@@ -77,6 +84,8 @@ class OfflineTraining():
                 is_dones = [frame.is_done for frame in mini_batch]
                 self.agent.train_from_mini_batch(observations, actions, rewards, next_observations, is_dones)
 
+                self.priority_alpha = min(self.priority_alpha + self.priority_alpha_delta, self.priority_alpha_max)
+
             if is_done:
                 self.last_seen_observation = self.env.reset()
                 self.agent.on_end_episode()
@@ -92,18 +101,35 @@ class OfflineTraining():
 
     def generate_mini_batch(self):
         batch_data = []
-        for index in range(dqn_agent.TIMESPAN_LENGTH, len(self.replays)):
-            this_frame = self.replays[index]
-            this_frame_historic_observations = np.concatenate([self.replays[replay_frame_index].observation for replay_frame_index in range(index - dqn_agent.TIMESPAN_LENGTH, index)], axis=0)
-            this_frame_next_observation_with_history = np.concatenate([self.replays[replay_frame_index].next_observation for replay_frame_index in range(index - dqn_agent.TIMESPAN_LENGTH, index)], axis=0)
+        # can't access the replays at the start of the list
+        # as they don't have the history needed to access them
+        # do the slice on the outside as the self.replays deque doesn't support slicing
+        probabilities = list([frame.priority ** self.priority_alpha for frame in self.replays])[dqn_agent.TIMESPAN_LENGTH:]
+        probability_sum = sum(probabilities)
+        distance_through_probabilities = np.random.rand(self.mini_batch_size) * probability_sum
+        for distance_through_probability in distance_through_probabilities:
+            selected_frame_index = OfflineTraining.find_frame_from_distance_through_probabilities(distance_through_probability, probabilities, dqn_agent.TIMESPAN_LENGTH)
+            selected_frame = self.replays[selected_frame_index]
+            selected_frame_historic_observations = np.concatenate([self.replays[replay_frame_index].observation for replay_frame_index in range(selected_frame_index - dqn_agent.TIMESPAN_LENGTH, selected_frame_index)], axis=0)
+            selected_frame_next_observation_with_history = np.concatenate([self.replays[replay_frame_index].next_observation for replay_frame_index in range(selected_frame_index - dqn_agent.TIMESPAN_LENGTH, selected_frame_index)], axis=0)
             batch_data.append(ReplayFrame(
-                observation = this_frame_historic_observations,
-                action = this_frame.action,
-                reward = this_frame.reward,
-                next_observation = this_frame_next_observation_with_history,
-                is_done = this_frame.is_done
+                observation = selected_frame_historic_observations,
+                action = selected_frame.action,
+                reward = selected_frame.reward,
+                next_observation = selected_frame_next_observation_with_history,
+                is_done = selected_frame.is_done
             ))
         return batch_data
+
+    @staticmethod
+    def find_frame_from_distance_through_probabilities(distance_through_probabilities, probabilities, frame_offset_from_probability_index):
+        assert(sum(probabilities) > distance_through_probabilities)
+        distance_remaining = distance_through_probabilities
+        for index, probability in enumerate(probabilities):
+            distance_remaining -= probability
+            if distance_remaining <= 0:
+                return index + frame_offset_from_probability_index
+        raise Exception('distance_through_probabilities didn\'t reduce to 0 while iterating through probabilities')
 
 def get_latest_file(file_pattern,path=None):
     if path is None:
