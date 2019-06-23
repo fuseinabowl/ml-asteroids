@@ -85,6 +85,7 @@ class OfflineTraining():
                 self.agent.train_from_mini_batch(observations, actions, rewards, next_observations, is_dones)
 
                 self.priority_alpha = min(self.priority_alpha + self.priority_alpha_delta, self.priority_alpha_max)
+                self.agent.increment_probability_sharpening()
 
             if is_done:
                 self.last_seen_observation = self.env.reset()

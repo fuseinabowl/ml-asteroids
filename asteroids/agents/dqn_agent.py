@@ -136,8 +136,10 @@ class DQNAgent:
         self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard, self.checkpointer, self.game_performance_logger], shuffle = False)
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
-        self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
         keras_backend.set_learning_phase(0)
+
+    def increment_probability_sharpening(self):
+        self.action_probability_sharpening = min(self.action_probability_sharpening + self.action_probability_sharpening_increase, self.action_probability_sharpening_max)
 
     def on_end_episode(self):
         self.model.reset_states()
