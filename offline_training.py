@@ -104,9 +104,12 @@ class OfflineTraining():
         # can't access the replays at the start of the list
         # as they don't have the history needed to access them
         # do the slice on the outside as the self.replays deque doesn't support slicing
+        print('collecting probabilities')
         probabilities = list([frame.priority ** self.priority_alpha for frame in self.replays])[dqn_agent.TIMESPAN_LENGTH:]
+        print('collected')
         probability_sum = sum(probabilities)
         distance_through_probabilities = np.random.rand(self.mini_batch_size) * probability_sum
+        print('sampling {0} training data from replays'.format(len(distance_through_probabilities)))
         for distance_through_probability in distance_through_probabilities:
             selected_frame_index = OfflineTraining.find_frame_from_distance_through_probabilities(distance_through_probability, probabilities, dqn_agent.TIMESPAN_LENGTH)
             selected_frame = self.replays[selected_frame_index]
@@ -119,6 +122,7 @@ class OfflineTraining():
                 next_observation = selected_frame_next_observation_with_history,
                 is_done = selected_frame.is_done
             ))
+        print('completed sampling')
         return batch_data
 
     @staticmethod
