@@ -126,7 +126,7 @@ Do a multipart vlog on what I've done and things that happened along the way
    - play audio on asteroids crashing - 1 hour
    - add fixed minimum delay before crash refire - 1 hour
 
-- Vlogs (10 minutes vids)
+- Vlogs (10 minutes vids) - 14-18 hours per video
  - determine content - 1 hour
  - per episode:
   - write 1st script - 2 hours
