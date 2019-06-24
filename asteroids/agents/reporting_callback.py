@@ -17,16 +17,20 @@ class ReportingCallback(Callback):
             self.summary_tensors.append(custom_tensor)
 
         self._custom_summary_mapped_values = None
+        self.should_report_on_next_epoch = False
 
     def set_custom_summary_values(self, custom_summaries):
         self._custom_summary_mapped_values = {}
         for name, value in custom_summaries.items():
             self._custom_summary_mapped_values[self._find_placeholder_for_name(name)] = value
+        self.should_report_on_next_epoch = True
 
     def on_epoch_end(self, epoch, logs):
+        if self.should_report_on_next_epoch:
         summary_strings = keras_backend.get_session().run(self.summary_tensors, feed_dict=self._custom_summary_mapped_values)
         for summary_str in summary_strings:
             self._tensorboard.writer.add_summary(summary_str, epoch)
+            self.should_report_on_next_epoch = False
 
     @staticmethod
     def _construct_summary(summary_name):
