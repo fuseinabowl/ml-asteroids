@@ -76,7 +76,7 @@ class OfflineTraining():
             if self._previous_frame_replay_data:
                 assert(self._last_action_estimated_quality)
                 future_quality_contribution = (self.agent.gamma * best_action_quality) if not self._previous_frame_replay_data.is_done else 0
-                last_action_quality_with_estimated_future = self._previous_frame_replay_data.reward + future_quality_contribution
+                last_action_quality_with_estimated_future = self._last_action_estimated_quality + future_quality_contribution
                 self._previous_frame_replay_data.priority = abs(last_action_quality_with_estimated_future - self._previous_frame_replay_data.reward) + PRIORITY_EPSILON
                 self.replays.append(self._previous_frame_replay_data)
                 
