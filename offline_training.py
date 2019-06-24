@@ -38,13 +38,19 @@ class ReplayFrame():
         self.is_done = is_done
         self.priority = None # to be filled by caller later
 
+class CustomSummaryNames():
+    PRIORITY_EXPERIENCE_SELECTION_ALPHA = 'priority_experience_selection_alpha'
+
 class OfflineTraining():
 
     def main(self, custom_model = None):
         self.env = environment.Env()
         self.replays = deque(maxlen = NUMBER_OF_REPLAY_FRAMES_STORED)
         self.last_seen_observation = self.env.reset()
-        self.agent = dqn_agent.DQNAgent(self.env.observation_space.shape[0], self.env.action_space.spaces[0].n, model=custom_model)
+        custom_summaries = {
+            CustomSummaryNames.PRIORITY_EXPERIENCE_SELECTION_ALPHA: (lambda: self.priority_alpha)
+        }
+        self.agent = dqn_agent.DQNAgent(self.env.observation_space.shape[0], self.env.action_space.spaces[0].n, model=custom_model, custom_summaries=custom_summaries)
 
         self.steps_completed = 0
         self.training_period = TRAINING_PERIOD
