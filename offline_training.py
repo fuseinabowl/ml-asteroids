@@ -40,6 +40,8 @@ class ReplayFrame():
 
 class CustomSummaryNames():
     PRIORITY_EXPERIENCE_SELECTION_ALPHA = 'priority_experience_selection_alpha'
+    PRIORITY_EXPERIENCE_PRIORITIES_AVERAGE = 'experience_priority_average'
+    PRIORITY_EXPERIENCE_PRIORITIES_STANDARD_DEVIATION = 'experience_priority_stddev'
 
 class OfflineTraining():
 
@@ -47,8 +49,12 @@ class OfflineTraining():
         self.env = environment.Env()
         self.replays = deque(maxlen = NUMBER_OF_REPLAY_FRAMES_STORED)
         self.last_seen_observation = self.env.reset()
+        self._priority_average = 0
+        self._priority_standard_deviation = 0
         custom_summaries = {
-            CustomSummaryNames.PRIORITY_EXPERIENCE_SELECTION_ALPHA: (lambda: self.priority_alpha)
+            CustomSummaryNames.PRIORITY_EXPERIENCE_SELECTION_ALPHA: (lambda: self.priority_alpha),
+            CustomSummaryNames.PRIORITY_EXPERIENCE_PRIORITIES_AVERAGE: (lambda: self._priority_average),
+            CustomSummaryNames.PRIORITY_EXPERIENCE_PRIORITIES_STANDARD_DEVIATION: (lambda: self._priority_standard_deviation),
         }
         self.agent = dqn_agent.DQNAgent(self.env.observation_space.shape[0], self.env.action_space.spaces[0].n, model=custom_model, custom_summaries=custom_summaries)
 
@@ -82,6 +88,8 @@ class OfflineTraining():
 
             self.steps_completed = self.steps_completed + 1
             if self.steps_completed % self.training_period == 0:
+                self._calculate_and_store_priority_stats()
+
                 mini_batch = self.generate_mini_batch()
                 observations = [frame.observation for frame in mini_batch]
                 actions = [frame.action for frame in mini_batch]
@@ -141,6 +149,10 @@ class OfflineTraining():
             if distance_remaining <= 0:
                 return index + frame_offset_from_probability_index
         raise Exception('distance_through_probabilities didn\'t reduce to 0 while iterating through probabilities')
+
+    def _calculate_and_store_priority_stats(self):
+        self._priority_average = sum([replay.priority for replay in self.replays]) / len(self.replays)
+        self._priority_standard_deviation = sum([(replay.priority - self._priority_average)**2 for replay in self.replays]) / len(self.replays)
 
 def get_latest_file(file_pattern,path=None):
     if path is None:
