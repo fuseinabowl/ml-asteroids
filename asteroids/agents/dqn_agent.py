@@ -10,6 +10,7 @@ import tensorflow as tf
 from collections import deque
 
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LambdaCallback
+from .reporting_callback import ReportingCallback
 import time
 
 NAME = 'asteroids-pilot-DuelingDQN-whole_replay_window{}'.format(int(time.time()))
@@ -17,8 +18,13 @@ EPOCHS_PER_TRAIN_STEP = 2
 BATCH_SIZE = 256
 TIMESPAN_LENGTH = 25
 
+class SummaryNames:
+    LEARNING_RATE = 'learning_rate'
+    AVERAGE_SCORE = 'average_score'
+    CHOICE_CONFIDENCE = 'choice_confidence'
+
 class DQNAgent:
-    def __init__(self, state_size, action_size, model=None):
+    def __init__(self, state_size, action_size, model=None, custom_summary_names=[]):
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = 0.99    # discount rate
@@ -40,22 +46,7 @@ class DQNAgent:
         self._this_game_reward = 0
         self._last_games_rewards = deque(maxlen=10)
 
-        learning_rate_placeholder = tf.placeholder(tf.float32, [], name = "learning_rate")
-        summary_tensor = tf.summary.scalar('learning rate', tensor=learning_rate_placeholder, family='game performance')
-        score_placeholder = tf.placeholder(tf.float32, [], name = "score")
-        score_tensor = tf.summary.scalar('average score', tensor=score_placeholder, family='game performance')
-        sharpening_placeholder = tf.placeholder(tf.float32, [], name = "sharpening")
-        sharpening_tensor = tf.summary.scalar('choice confidence', tensor=sharpening_placeholder, family='game performance')
-        def write_game_performance(epoch, logs):
-            summary_strings = keras_backend.get_session().run([summary_tensor, score_tensor, sharpening_tensor], feed_dict={
-                learning_rate_placeholder:self.learning_rate,
-                score_placeholder:self.calculate_average_score(),
-                sharpening_placeholder:self.action_probability_sharpening,
-            })
-            for summary_str in summary_strings:
-                self.tensorboard.writer.add_summary(summary_str, epoch)
-
-        self.game_performance_logger = LambdaCallback(on_epoch_end=write_game_performance)
+        self._reporting_callback = ReportingCallback(summary_names=[SummaryNames.LEARNING_RATE, SummaryNames.AVERAGE_SCORE, SummaryNames.CHOICE_CONFIDENCE], tensorboard = self.tensorboard)
 
         keras_backend.set_learning_phase(0)
 
@@ -133,7 +124,12 @@ class DQNAgent:
         for index, action in enumerate(actions):
             targets_f[index][action] = targets[index]
             
-        self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard, self.checkpointer, self.game_performance_logger], shuffle = False)
+        self._reporting_callback.set_custom_summary_values({
+            SummaryNames.LEARNING_RATE : self.learning_rate,
+            SummaryNames.CHOICE_CONFIDENCE : self.action_probability_sharpening,
+            SummaryNames.AVERAGE_SCORE : self.calculate_average_score(),
+        })
+        self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard, self.checkpointer, self._reporting_callback], shuffle = False)
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
         keras_backend.set_learning_phase(0)
