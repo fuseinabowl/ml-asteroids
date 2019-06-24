@@ -17,7 +17,10 @@ from tensorflow.keras.models import load_model
 
 import numpy as np
 
+NUMBER_OF_REPLAY_FRAMES_STORED = 1000
+TRAINING_PERIOD = NUMBER_OF_REPLAY_FRAMES_STORED
 PRIORITY_EPSILON = 0.1
+MINI_BATCH_SIZE = NUMBER_OF_REPLAY_FRAMES_STORED
 
 class ReplayFrame():
     def __init__(
