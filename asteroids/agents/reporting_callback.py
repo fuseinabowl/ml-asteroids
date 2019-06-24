@@ -27,9 +27,9 @@ class ReportingCallback(Callback):
 
     def on_epoch_end(self, epoch, logs):
         if self.should_report_on_next_epoch:
-        summary_strings = keras_backend.get_session().run(self.summary_tensors, feed_dict=self._custom_summary_mapped_values)
-        for summary_str in summary_strings:
-            self._tensorboard.writer.add_summary(summary_str, epoch)
+            summary_strings = keras_backend.get_session().run(self.summary_tensors, feed_dict=self._custom_summary_mapped_values)
+            for summary_str in summary_strings:
+                self._tensorboard.writer.add_summary(summary_str, epoch)
             self.should_report_on_next_epoch = False
 
     @staticmethod
