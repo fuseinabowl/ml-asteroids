@@ -72,10 +72,10 @@ Game feel
 Get a working good looking asteroids game + agent
 Do a multipart vlog on what I've done and things that happened along the way
 
-- Priority Replay - 4 hours total
- - recording replay priority - 1 hour
- - selecting replays for mini batch - 2 hours
- - scaling up over time - 1 hour
++ Priority Replay - 4 hours total
+ + recording replay priority - 1 hour
+ + selecting replays for mini batch - 2 hours
+ + scaling up over time - 1 hour
 
 - LSTM cells - 11 hours total
  - return to single frame replays - 1 hour
