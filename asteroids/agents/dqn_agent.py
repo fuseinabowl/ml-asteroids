@@ -24,7 +24,7 @@ class SummaryNames:
     CHOICE_CONFIDENCE = 'choice_confidence'
 
 class DQNAgent:
-    def __init__(self, state_size, action_size, model=None, custom_summary_names=[]):
+    def __init__(self, state_size, action_size, model=None, custom_summaries={}):
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = 0.99    # discount rate
@@ -46,7 +46,9 @@ class DQNAgent:
         self._this_game_reward = 0
         self._last_games_rewards = deque(maxlen=10)
 
-        self._reporting_callback = ReportingCallback(summary_names=[SummaryNames.LEARNING_RATE, SummaryNames.AVERAGE_SCORE, SummaryNames.CHOICE_CONFIDENCE], tensorboard = self.tensorboard)
+        self._custom_summaries = custom_summaries
+        custom_summary_names = self._custom_summaries.keys()
+        self._reporting_callback = ReportingCallback(summary_names=[SummaryNames.LEARNING_RATE, SummaryNames.AVERAGE_SCORE, SummaryNames.CHOICE_CONFIDENCE] + list(custom_summary_names), tensorboard = self.tensorboard)
 
         keras_backend.set_learning_phase(0)
 
@@ -124,11 +126,12 @@ class DQNAgent:
         for index, action in enumerate(actions):
             targets_f[index][action] = targets[index]
             
-        self._reporting_callback.set_custom_summary_values({
+        custom_summary_value_dict = {name: getter() for name, getter in self._custom_summaries.items()}
+        self._reporting_callback.set_custom_summary_values({**{
             SummaryNames.LEARNING_RATE : self.learning_rate,
             SummaryNames.CHOICE_CONFIDENCE : self.action_probability_sharpening,
             SummaryNames.AVERAGE_SCORE : self.calculate_average_score(),
-        })
+        }, **custom_summary_value_dict})
         self.model.fit([states], targets_f, validation_split=0.25, batch_size = BATCH_SIZE, initial_epoch = self.epoch_counter, epochs=self.epoch_counter + EPOCHS_PER_TRAIN_STEP, callbacks=[self.tensorboard, self.checkpointer, self._reporting_callback], shuffle = False)
         self.epoch_counter = self.epoch_counter + EPOCHS_PER_TRAIN_STEP
         
