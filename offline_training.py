@@ -17,10 +17,7 @@ from tensorflow.keras.models import load_model
 
 import numpy as np
 
-NUMBER_OF_REPLAY_FRAMES_STORED = 20000
-TRAINING_PERIOD = 2000
-PRIORITY_EPSILON = 100
-MINI_BATCH_SIZE = 10000
+PRIORITY_EPSILON = 0.1
 
 class ReplayFrame():
     def __init__(
@@ -61,8 +58,8 @@ class OfflineTraining():
         self.steps_completed = 0
         self.training_period = TRAINING_PERIOD
 
-        self.priority_alpha = 0
-        self.priority_alpha_delta = 0.001
+        self.priority_alpha = 0.1
+        self.priority_alpha_delta = 0.01
         self.priority_alpha_max = 1
 
         self.mini_batch_size = MINI_BATCH_SIZE
