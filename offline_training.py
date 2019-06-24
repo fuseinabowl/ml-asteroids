@@ -11,7 +11,7 @@ from random import shuffle
 from asteroids import env as environment
 from asteroids.renderer import renderer
 from asteroids.game import update_result
-from asteroids.agents import dqn_agent
+from asteroids.agents import lstm_cell_dqn_agent as dqn_agent
 
 from tensorflow.keras.models import load_model
 
@@ -68,7 +68,7 @@ class OfflineTraining():
         self._previous_frame_replay_data = None
         
         def update_game():
-            player_actions_as_single_value, action_quality, best_action_quality = self.agent.act(self.last_seen_observation)
+            player_actions_as_single_value, action_quality, best_action_quality, _ = self.agent.act(self.last_seen_observation, None)
             next_observation, reward, is_done, _ = self.env.step(player_actions_as_single_value)
             if self._previous_frame_replay_data:
                 assert(self._last_action_estimated_quality)
