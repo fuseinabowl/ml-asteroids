@@ -87,7 +87,12 @@ class OfflineTraining():
             self.agent.store_action_reward(reward)
 
             self.steps_completed = self.steps_completed + 1
-            if self.steps_completed % self.training_period == 0:
+            if self.steps_completed % self.training_period != 0:
+                print(f'currently playing and collecting replays: step {self.steps_completed % self.training_period}/{self.training_period}', end='\r')
+            else:
+                print(f'currently playing and collecting replays: step {self.training_period}/{self.training_period}', end='\n')
+                print('collected replays, starting training session')
+
                 self._calculate_and_store_priority_stats()
 
                 mini_batch = self.generate_mini_batch()
