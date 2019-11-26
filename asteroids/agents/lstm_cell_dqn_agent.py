@@ -64,9 +64,9 @@ class DQNAgent:
         cell_1_state_in = [Input(shape=(cell_1_units,)) for _ in range(2)]
         cell_2_state_in = [Input(shape=(cell_2_units,)) for _ in range(2)]
 
-        output, cell_0_output, cell_0_cell_state = LSTMCell(cell_0_units, input_shape=(self.state_size,))(inputs=observation_input, states=cell_0_state_in)
+        output, (cell_0_output, cell_0_cell_state) = LSTMCell(cell_0_units, input_shape=(self.state_size,))(inputs=observation_input, states=cell_0_state_in)
         output = Dropout(rate=0.3)(output)
-        output, cell_1_output, cell_1_cell_state = LSTMCell(cell_1_units, input_shape=(self.state_size,))(inputs=observation_input, states=cell_1_state_in)
+        output, (cell_1_output, cell_1_cell_state) = LSTMCell(cell_1_units, input_shape=(self.state_size,))(inputs=observation_input, states=cell_1_state_in)
         output = Dropout(rate=0.3)(output)
         #output, cell_2_state = LSTMCell(cell_2_units, input_shape=(self.state_size,))([observation_input, cell_2_state_in])
         #output = Dropout(rate=0.3)(output)
